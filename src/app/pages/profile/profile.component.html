@@ -1,0 +1,182 @@
+<div class="space-y-8 max-w-2xl">
+  <div>
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Το προφίλ μου</h2>
+    <p class="text-slate-600 dark:text-slate-400 mt-1">Δείτε και επεξεργαστείτε τα στοιχεία και τον κωδικό σας</p>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3">
+      {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
+      Φόρτωση προφίλ...
+    </div>
+  } @else if (profile()) {
+    <!-- Profile photo -->
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+        <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Φωτογραφία προφίλ</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Ανεβάστε μια φωτογραφία (JPG, PNG ή WebP)</p>
+      </div>
+      <div class="p-6 flex flex-wrap items-end gap-6">
+        <div class="flex items-center gap-4">
+          @if (profileImageUrl()) {
+            <img [src]="profileImageUrl()" alt="Προφίλ" class="w-24 h-24 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600" />
+          } @else {
+            <div class="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-2xl font-semibold text-slate-600 dark:text-slate-300">
+              {{ auth.getInitials() }}
+            </div>
+          }
+          <div class="space-y-2">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              (change)="onFileSelected($event)"
+              class="block w-full text-sm text-slate-600 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-cyan-500 file:text-white file:font-medium hover:file:bg-cyan-400"
+            />
+            @if (selectedFile) {
+              <p class="text-sm text-slate-600 dark:text-slate-400">{{ selectedFile.name }}</p>
+              <button
+                type="button"
+                [disabled]="savingPhoto()"
+                (click)="uploadPhoto()"
+                class="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-white text-sm font-medium transition disabled:opacity-60"
+              >
+                {{ savingPhoto() ? 'Ανέβασμα...' : 'Ανέβασμα φωτογραφίας' }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile data -->
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+        <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Στοιχεία λογαριασμού</h3>
+      </div>
+      <form (ngSubmit)="saveProfile()" class="p-6 space-y-5">
+        <div>
+          <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email</label>
+          <input
+            id="email"
+            type="email"
+            [value]="profile()!.email"
+            disabled
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+          />
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Το email δεν μπορεί να αλλάξει.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Όνομα</label>
+            <input
+              id="firstName"
+              type="text"
+              [(ngModel)]="form.firstName"
+              name="firstName"
+              maxlength="100"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+              placeholder="Όνομα"
+            />
+          </div>
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Επώνυμο</label>
+            <input
+              id="lastName"
+              type="text"
+              [(ngModel)]="form.lastName"
+              name="lastName"
+              maxlength="100"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+              placeholder="Επώνυμο"
+            />
+          </div>
+        </div>
+        <div>
+          <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Τηλέφωνο</label>
+          <input
+            id="phone"
+            type="text"
+            [(ngModel)]="form.phone"
+            name="phone"
+            maxlength="20"
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            placeholder="Προαιρετικό"
+          />
+        </div>
+        <div class="flex justify-end pt-2">
+          <button
+            type="submit"
+            [disabled]="savingProfile()"
+            class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
+          >
+            {{ savingProfile() ? 'Αποθήκευση...' : 'Αποθήκευση στοιχείων' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Change password -->
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+        <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Αλλαγή κωδικού</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Εισάγετε τον τρέχοντα κωδικό και τον νέο κωδικό που θέλετε.</p>
+      </div>
+      <form (ngSubmit)="savePassword()" class="p-6 space-y-5">
+        <div>
+          <label for="currentPassword" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Τρέχων κωδικός</label>
+          <input
+            id="currentPassword"
+            type="password"
+            [(ngModel)]="passwordForm.currentPassword"
+            name="currentPassword"
+            autocomplete="current-password"
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            placeholder="••••••••"
+          />
+        </div>
+        <div>
+          <label for="newPassword" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Νέος κωδικός</label>
+          <input
+            id="newPassword"
+            type="password"
+            [(ngModel)]="passwordForm.newPassword"
+            name="newPassword"
+            autocomplete="new-password"
+            minlength="6"
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            placeholder="Τουλάχιστον 6 χαρακτήρες"
+          />
+        </div>
+        <div>
+          <label for="confirmPassword" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Επιβεβαίωση νέου κωδικού</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            [(ngModel)]="passwordForm.confirmPassword"
+            name="confirmPassword"
+            autocomplete="new-password"
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            placeholder="Επαναλάβετε τον νέο κωδικό"
+          />
+        </div>
+        @if (passwordSuccess()) {
+          <p class="text-sm text-green-600 dark:text-green-400 font-medium">Ο κωδικός ενημερώθηκε επιτυχώς.</p>
+        }
+        <div class="flex justify-end pt-2">
+          <button
+            type="submit"
+            [disabled]="savingPassword()"
+            class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 dark:bg-slate-600 dark:hover:bg-slate-500 text-white font-semibold transition disabled:opacity-60"
+          >
+            {{ savingPassword() ? 'Αλλαγή...' : 'Αλλαγή κωδικού' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

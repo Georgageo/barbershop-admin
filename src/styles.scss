@@ -1,0 +1,7 @@
+@use 'tailwindcss';
+
+/* Tailwind v4: dark mode με class στο <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html, body { height: 100%; }
+body { margin: 0; font-family: 'DM Sans', system-ui, sans-serif; }

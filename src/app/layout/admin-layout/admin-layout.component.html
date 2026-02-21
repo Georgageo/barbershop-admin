@@ -1,0 +1,211 @@
+<div class="min-h-screen bg-slate-100 dark:bg-slate-950 flex">
+  <!-- Sidebar -->
+  <aside
+    class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50 flex flex-col transition-transform duration-200 ease-out"
+    [class.-translate-x-full]="!sidebarOpen"
+    [class.translate-x-0]="sidebarOpen"
+  >
+    <div class="flex items-center gap-3 px-6 h-16 border-b border-slate-200 dark:border-slate-700/50 shrink-0">
+      <span class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">Barbershop</span>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+      @if (isAdmin) {
+        <a
+          routerLink="/admin"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">📊</span>
+          <span>Dashboard</span>
+        </a>
+      }
+      @if (isBarber || isAdmin || managerCanSeeShopsAndBookings) {
+        <a
+          routerLink="/admin/bookings"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">📅</span>
+          <span>{{ isBarber ? 'Πρόγραμμα μου' : 'Κρατήσεις' }}</span>
+        </a>
+      }
+      @if (isBarber || isManager) {
+        <a
+          routerLink="/admin/my-schedule"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">🕐</span>
+          <span>Το ωραριό μου</span>
+        </a>
+      }
+      @if (isAdmin) {
+        <a
+          routerLink="/admin/customers"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">👤</span>
+          <span>Πελάτες</span>
+        </a>
+        <a
+          routerLink="/admin/services"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">✂️</span>
+          <span>Υπηρεσίες</span>
+        </a>
+        <a
+          routerLink="/admin/staff"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">👥</span>
+          <span>Ομάδα</span>
+        </a>
+        <a
+          routerLink="/admin/invitations"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">✉️</span>
+          <span>Προσκλήσεις</span>
+        </a>
+      }
+      @if (managerCanSeeShopsAndBookings) {
+        <a
+          routerLink="/admin/shops"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">🏪</span>
+          <span>Μαγαζιά</span>
+        </a>
+        <a
+          routerLink="/admin/employee-hours"
+          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
+        >
+          <span class="text-lg">🕐</span>
+          <span>Ωράρια εργαζομένων</span>
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <!-- Overlay on mobile when sidebar open -->
+  @if (sidebarOpen) {
+    <div
+      class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+      (click)="toggleSidebar()"
+      aria-hidden="true"
+    ></div>
+  }
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center px-4 lg:px-8 shrink-0">
+      <button
+        type="button"
+        (click)="toggleSidebar()"
+        class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+        aria-label="Toggle menu"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <div class="flex-1 lg:pl-0 pl-2">
+        <h1 class="text-lg font-semibold text-slate-800 dark:text-white">Admin</h1>
+      </div>
+      <button
+        type="button"
+        (click)="theme.toggleTheme()"
+        class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition mr-2"
+        [attr.aria-label]="theme.theme() === 'dark' ? 'Φωτεινό θέμα' : 'Σκοτεινό θέμα'"
+        [title]="theme.theme() === 'dark' ? 'Φωτεινό θέμα' : 'Σκοτεινό θέμα'"
+      >
+        @if (theme.theme() === 'dark') {
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        } @else {
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        }
+      </button>
+      <!-- User menu (top right) -->
+      <div class="relative ml-auto">
+        <button
+          type="button"
+          (click)="toggleUserMenu()"
+          class="w-10 h-10 rounded-full bg-cyan-500 text-white font-semibold text-sm flex items-center justify-center hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 transition"
+          [attr.aria-expanded]="userMenuOpen()"
+          aria-label="Λογαριασμός χρήστη"
+        >
+          {{ auth.getInitials() }}
+        </button>
+
+        @if (userMenuOpen()) {
+          <div
+            class="fixed inset-0 z-40"
+            (click)="closeUserMenu()"
+            aria-hidden="true"
+          ></div>
+          <div
+            class="absolute right-0 top-full mt-2 w-56 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-lg py-2 z-50"
+            role="menu"
+          >
+            <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-600">
+              <p class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate" title="{{ auth.currentUser()?.email }}">
+                {{ auth.currentUser()?.email }}
+              </p>
+            </div>
+            <a
+              routerLink="/admin/profile"
+              (click)="closeUserMenu()"
+              class="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+              role="menuitem"
+            >
+              <span aria-hidden="true">👤</span>
+              Προφίλ
+            </a>
+            <button
+              type="button"
+              (click)="closeUserMenu(); auth.logout()"
+              class="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+              role="menuitem"
+            >
+              <span aria-hidden="true">🚪</span>
+              Αποσύνδεση
+            </button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <main class="flex-1 p-4 lg:p-8 overflow-auto">
+      @if (managerHasNoShops) {
+        <div class="max-w-md mx-auto mt-16 text-center">
+          <div class="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-8">
+            <span class="text-4xl mb-4 block" aria-hidden="true">🏪</span>
+            <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Δεν σας έχει ανατεθεί ακόμα κανένα μαγαζί</h2>
+            <p class="text-slate-600 dark:text-slate-400 mb-6">
+              Ως υπεύθυνος μαγαζιού, μπορείτε να δείτε κρατήσεις και ωράρια μόνο αφού ο διαχειριστής σας αναθέσει σε ένα ή περισσότερα καταστήματα.
+            </p>
+            <p class="text-sm text-slate-500 dark:text-slate-500">
+              Επικοινωνήστε με το διαχειριστή συστήματος για να σας ανατεθούν μαγαζιά. Μέχρι τότε μπορείτε να ενημερώσετε το <a routerLink="/admin/profile" class="text-cyan-600 dark:text-cyan-400 hover:underline">προφίλ σας</a> ή να αποσυνδεθείτε.
+            </p>
+          </div>
+        </div>
+      } @else {
+        <router-outlet />
+      }
+    </main>
+  </div>
+</div>

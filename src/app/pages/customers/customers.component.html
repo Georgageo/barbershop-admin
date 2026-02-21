@@ -1,0 +1,164 @@
+<div class="space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Πελάτες</h2>
+      <p class="text-slate-600 dark:text-slate-400 mt-1">Διαχείριση πελατών – για τηλεφωνικές κρατήσεις</p>
+    </div>
+    <button
+      type="button"
+      (click)="openCreateModal()"
+      class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
+    >
+      + Προσθήκη Πελάτη
+    </button>
+  </div>
+
+  <div class="flex gap-4 items-center">
+    <input
+      type="text"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event); onSearchInput()"
+      placeholder="Αναζήτηση (όνομα, τηλέφωνο, email)..."
+      class="flex-1 max-w-md px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+    />
+    <button
+      type="button"
+      (click)="load()"
+      [disabled]="loading()"
+      class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium disabled:opacity-60 transition"
+    >
+      Ανανέωση
+    </button>
+  </div>
+
+  @if (error() && !showModal()) {
+    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3">
+      {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
+      Φόρτωση πελατών...
+    </div>
+  } @else {
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[600px]">
+          <thead class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
+            <tr>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Όνομα</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Τηλέφωνο</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Email</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+            @for (c of filteredList(); track c.id) {
+              <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/50">
+                <td class="py-4 px-4">
+                  <span class="font-medium text-slate-800 dark:text-white">{{ c.firstName }} {{ c.lastName }}</span>
+                </td>
+                <td class="py-4 px-4 text-slate-700 dark:text-slate-300">{{ c.phone ?? '—' }}</td>
+                <td class="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">{{ displayEmail(c) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3" class="py-12 px-4 text-center text-slate-500">
+                  Δεν υπάρχουν πελάτες. Προσθέστε πελάτη για τηλεφωνικές κρατήσεις.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  @if (showModal()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      (click)="closeModal()"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+          <h3 class="text-xl font-bold text-slate-800 dark:text-white">Νέος Πελάτης</h3>
+        </div>
+        <form (ngSubmit)="save()" class="p-6 space-y-5">
+          @if (error()) {
+            <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 text-sm">
+              {{ error() }}
+            </div>
+          }
+          <div>
+            <label for="firstName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Όνομα *</label>
+            <input
+              id="firstName"
+              type="text"
+              [(ngModel)]="form.firstName"
+              name="firstName"
+              required
+              maxlength="100"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Επώνυμο *</label>
+            <input
+              id="lastName"
+              type="text"
+              [(ngModel)]="form.lastName"
+              name="lastName"
+              required
+              maxlength="100"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+          <div>
+            <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Τηλέφωνο *</label>
+            <input
+              id="phone"
+              type="text"
+              [(ngModel)]="form.phone"
+              name="phone"
+              required
+              maxlength="20"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="π.χ. 6912345678"
+            />
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email (προαιρετικό)</label>
+            <input
+              id="email"
+              type="email"
+              [(ngModel)]="form.email"
+              name="email"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="πελάτης&#64;example.com"
+            />
+          </div>
+          <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <button
+              type="button"
+              (click)="closeModal()"
+              [disabled]="saving()"
+              class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium transition disabled:opacity-60"
+            >
+              Ακύρωση
+            </button>
+            <button
+              type="submit"
+              [disabled]="saving()"
+              class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
+            >
+              {{ saving() ? 'Αποθήκευση...' : 'Αποθήκευση' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
