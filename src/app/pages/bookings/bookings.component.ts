@@ -13,6 +13,11 @@ import { ServicesService } from '../../features/services/services.service';
 import { Shop } from '../../features/shops/shops.service';
 import { Barber } from '../../core/models/barber.model';
 import { Service } from '../../core/models/service.model';
+import { TableColumn } from '../../components/table/table.models';
+import { TableComponent } from '../../components/table/table.component';
+import { DataTableCellDirective } from '../../components/table/table-cell.directive';
+import { CardListComponent } from '../../components/card-list/card-list.component';
+import { CardItemDirective } from '../../components/card-list/card-item.directive';
 
 const DAY_NAMES_EL = ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'];
 const DAY_NAMES_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -20,7 +25,15 @@ const DAY_NAMES_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'F
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    TableComponent,
+    DataTableCellDirective,
+    CardListComponent,
+    CardItemDirective,
+  ],
   templateUrl: './bookings.component.html',
   styleUrl: './bookings.component.scss',
 })
@@ -54,6 +67,9 @@ export class BookingsComponent implements OnInit, OnDestroy {
   });
 
   statusOptions: { value: AppointmentStatus; label: string }[] = [];
+  barberColumns: TableColumn[] = [];
+  adminColumns: TableColumn[] = [];
+
   private readonly statusKeys: Record<AppointmentStatus, string> = {
     PENDING: 'bookings.statusPending',
     CONFIRMED: 'bookings.statusConfirmed',
@@ -74,6 +90,22 @@ export class BookingsComponent implements OnInit, OnDestroy {
       { value: 'CANCELLED', label: t('bookings.statusCancelled') },
       { value: 'NO_SHOW', label: t('bookings.statusNoShow') },
     ];
+    this.barberColumns = [
+      { field: 'dateTime', header: t('bookings.dateTime') },
+      { field: 'customer', header: t('bookings.customer') },
+      { field: 'service', header: t('bookings.service') },
+      { field: 'status', header: t('common.status') },
+      { field: 'statusChange', header: t('common.actions') },
+    ];
+    this.adminColumns = [
+      { field: 'dateTime', header: t('bookings.dateTime') },
+      { field: 'customer', header: t('bookings.customer') },
+      { field: 'shop', header: t('bookings.shop') },
+      { field: 'barber', header: t('bookings.barber') },
+      { field: 'service', header: t('bookings.service') },
+      { field: 'status', header: t('common.status') },
+      { field: 'statusChange', header: t('common.actions') },
+    ];
   }
 
   get isBarber(): boolean {
@@ -87,6 +119,12 @@ export class BookingsComponent implements OnInit, OnDestroy {
   get isAdminOrManager(): boolean {
     const role = this.auth.currentUser()?.role;
     return role === 'ADMIN' || role === 'MANAGER';
+  }
+
+  getBookingsEmptyMessage(): string {
+    if (this.isBarber) return this.translate.instant('bookings.noAppointmentsBarber');
+    if (this.filterShopId() || this.filterStatus()) return this.translate.instant('bookings.noBookingsFilter');
+    return this.translate.instant('bookings.noBookings');
   }
 
   // New booking modal (admin only)

@@ -1,11 +1,27 @@
 <div class="space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
+  <!-- Header: on mobile = title, buttons, then filter; on desktop = title | filter + buttons -->
+  <div class="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
+    <div class="order-1">
       <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ 'staff.title' | translate }}</h2>
       <p class="text-slate-600 dark:text-slate-400 mt-1">{{ 'staff.subtitle' | translate }}</p>
     </div>
-    <div class="flex items-center gap-2">
-      <div class="flex rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden">
+    <div class="order-2 flex flex-col gap-4 md:order-2 md:flex-row md:items-center md:gap-2">
+      <div class="order-1 flex items-center gap-2 md:order-2">
+        <button
+          type="button"
+          (click)="openCreateBarberModal()"
+          class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+        >
+          + {{ 'staff.addBarber' | translate }}
+        </button>
+        <a
+          routerLink="/admin/employee-hours"
+          class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium transition"
+        >
+          {{ 'staff.employeeHoursLink' | translate }}
+        </a>
+      </div>
+      <div class="order-2 flex rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden md:order-1">
         <button
           type="button"
           (click)="setFilter('all')"
@@ -37,23 +53,10 @@
           {{ 'staff.managers' | translate }}
         </button>
       </div>
-      <button
-        type="button"
-        (click)="openCreateBarberModal()"
-        class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-      >
-        + {{ 'staff.addBarber' | translate }}
-      </button>
-      <a
-        routerLink="/admin/employee-hours"
-        class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium transition"
-      >
-        {{ 'staff.employeeHoursLink' | translate }}
-      </a>
     </div>
   </div>
 
-  @if (error() && !showCreateBarberModal() && !showServicesModal() && !showShopsModal()) {
+  @if (error() && !showCreateBarberModal() && !showEditBarberModal() && !showServicesModal() && !showShopsModal()) {
     <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3">
       {{ error() }}
     </div>
@@ -61,194 +64,219 @@
 
   @if (loading()) {
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
-      Φόρτωση ομάδας...
+      {{ 'staff.loadingTeam' | translate }}
     </div>
   } @else {
-    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-[700px]">
-          <thead class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Όνομα</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Email</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Ρόλος</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Λεπτομέρειες</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Ενέργειες</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-            @for (m of filteredList(); track m.id) {
-              <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/50">
-                <td class="py-4 px-4">
-                  <span class="font-medium text-slate-800 dark:text-white">{{ displayName(m) }}</span>
-                </td>
-                <td class="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  {{ m.email }}
-                </td>
-                <td class="py-4 px-4">
-                  <span
-                    class="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium"
-                    [class]="m.role === 'BARBER'
-                      ? 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-300'
-                      : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'"
-                  >
-                    {{ roleLabel(m.role) }}
-                  </span>
-                </td>
-                <td class="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  @if (m.role === 'BARBER' && (m.barberId || m.barber)) {
-                    <span class="text-slate-500 dark:text-slate-400">
-                      {{ (m.barber?.services?.length ?? 0) }} υπηρεσίες
-                      {{ (m.barber?.isAvailable ?? true) ? '· Διαθέσιμος' : '· Μη διαθέσιμος' }}
-                    </span>
-                  }
-                  @if (m.role === 'MANAGER' && m.managedShops && m.managedShops.length > 0) {
-                    <span class="text-slate-500 dark:text-slate-400">
-                      {{ m.managedShops.length }} μαγαζιά: {{ managerShopsSummary(m) }}
-                    </span>
-                  }
-                  @if (m.role === 'MANAGER' && (!m.managedShops || m.managedShops.length === 0)) {
-                    <span class="text-slate-400 dark:text-slate-500">Δεν έχει ανατεθεί σε μαγαζί</span>
-                  }
-                </td>
-                <td class="py-4 px-4">
-                  <div class="flex flex-wrap items-center gap-2">
-                    @if (m.role === 'BARBER' && m.barberId) {
-                      <button
-                        type="button"
-                        (click)="openServicesModal(m)"
-                        class="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-sm font-medium transition"
-                      >
-                        Υπηρεσίες
-                      </button>
-                      <button
-                        type="button"
-                        (click)="toggleAvailable(m)"
-                        class="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium transition"
-                        [class]="(m.barber?.isAvailable ?? true)
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50'
-                          : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'"
-                      >
-                        {{ (m.barber?.isAvailable ?? true) ? 'Διαθέσιμος' : 'Μη διαθέσιμος' }}
-                      </button>
-                    }
-                    @if (m.role === 'MANAGER') {
-                      <button
-                        type="button"
-                        (click)="openShopsModal(m)"
-                        class="px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-sm font-medium transition"
-                      >
-                        Διαχείριση μαγαζιών
-                      </button>
-                    }
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" class="py-12 px-4 text-center text-slate-500 dark:text-slate-400">
-                  Δεν υπάρχουν μέλη ομάδας. Προσθέστε κουρέα ή δημιουργήστε πρόσκληση για υπεύθυνο.
-                </td>
-              </tr>
+    <div class="md:hidden">
+      <app-card-list
+        [data]="filteredList()"
+        [loading]="loading()"
+        [emptyMessage]="'staff.noStaff' | translate"
+        trackBy="id"
+      >
+        <ng-template appCardItem let-m>
+          <div class="space-y-2">
+            <p class="font-semibold text-slate-800 dark:text-white">{{ displayName(m) }}</p>
+            <p class="text-sm text-slate-600 dark:text-slate-400">{{ m.email }}</p>
+            <span
+              class="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium"
+              [class]="m.role === 'BARBER'
+                ? 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-300'
+                : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'"
+            >
+              {{ roleLabel(m.role) }}
+            </span>
+            @if (m.role === 'BARBER' && (m.barberId || m.barber)) {
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                {{ 'staff.barberServicesCount' | translate: { count: (m.barber?.services?.length ?? 0) } }}
+                · {{ (m.barber?.isAvailable ?? true) ? ('staff.available' | translate) : ('staff.notAvailable' | translate) }}
+              </p>
             }
-          </tbody>
-        </table>
-      </div>
+            @if (m.role === 'MANAGER' && m.managedShops && m.managedShops.length > 0) {
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                {{ 'staff.managerShopsCount' | translate: { count: m.managedShops.length } }}: {{ managerShopsSummary(m) }}
+              </p>
+            }
+            @if (m.role === 'MANAGER' && (!m.managedShops || m.managedShops.length === 0)) {
+              <p class="text-sm text-slate-400 dark:text-slate-500">{{ 'staff.noShopAssigned' | translate }}</p>
+            }
+            <div class="flex flex-wrap items-center gap-2 pt-2">
+              @if (m.role === 'BARBER' && m.barberId) {
+                <button
+                  type="button"
+                  (click)="openEditBarberModal(m)"
+                  class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200"
+                  [title]="'common.edit' | translate"
+                >
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  (click)="toggleAvailable(m)"
+                  class="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-200"
+                  [title]="'common.toggleActive' | translate"
+                >
+                  <i class="pi pi-power-off"></i>
+                </button>
+                <button
+                  type="button"
+                  (click)="openServicesModal(m)"
+                  class="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-sm font-medium transition"
+                >
+                  {{ 'staff.servicesBtn' | translate }}
+                </button>
+              }
+              @if (m.role === 'MANAGER') {
+                <button
+                  type="button"
+                  (click)="openShopsModal(m)"
+                  class="px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-sm font-medium transition"
+                >
+                  {{ 'staff.manageShops' | translate }}
+                </button>
+              }
+            </div>
+          </div>
+        </ng-template>
+      </app-card-list>
+    </div>
+
+    <div class="hidden md:block">
+      <app-data-table
+        [data]="filteredList()"
+        [columns]="columns"
+        [loading]="loading()"
+        [emptyMessage]="'staff.noStaff' | translate"
+      >
+      <ng-template appTableCell="name" let-m>{{ displayName(m) }}</ng-template>
+      <ng-template appTableCell="email" let-m>{{ m.email }}</ng-template>
+      <ng-template appTableCell="role" let-m>
+        <span
+          class="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium"
+          [class]="m.role === 'BARBER'
+            ? 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-300'
+            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'"
+        >
+          {{ roleLabel(m.role) }}
+        </span>
+      </ng-template>
+      <ng-template appTableCell="details" let-m>
+        @if (m.role === 'BARBER' && (m.barberId || m.barber)) {
+          <span class="text-slate-500 dark:text-slate-400">
+            {{ 'staff.barberServicesCount' | translate: { count: (m.barber?.services?.length ?? 0) } }}
+            · {{ (m.barber?.isAvailable ?? true) ? ('staff.available' | translate) : ('staff.notAvailable' | translate) }}
+          </span>
+        }
+        @if (m.role === 'MANAGER' && m.managedShops && m.managedShops.length > 0) {
+          <span class="text-slate-500 dark:text-slate-400">
+            {{ 'staff.managerShopsCount' | translate: { count: m.managedShops.length } }}: {{ managerShopsSummary(m) }}
+          </span>
+        }
+        @if (m.role === 'MANAGER' && (!m.managedShops || m.managedShops.length === 0)) {
+          <span class="text-slate-400 dark:text-slate-500">{{ 'staff.noShopAssigned' | translate }}</span>
+        }
+      </ng-template>
+      <ng-template appTableCell="actions" let-m>
+        <div class="flex flex-wrap items-center gap-2">
+          @if (m.role === 'BARBER' && m.barberId) {
+            <button
+              type="button"
+              (click)="openEditBarberModal(m)"
+              class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200"
+              [title]="'common.edit' | translate"
+            >
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button
+              type="button"
+              (click)="toggleAvailable(m)"
+              class="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-200"
+              [title]="'common.toggleActive' | translate"
+            >
+              <i class="pi pi-power-off"></i>
+            </button>
+            <button
+              type="button"
+              (click)="openServicesModal(m)"
+              class="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-sm font-medium transition"
+            >
+              {{ 'staff.servicesBtn' | translate }}
+            </button>
+          }
+          @if (m.role === 'MANAGER') {
+            <button
+              type="button"
+              (click)="openShopsModal(m)"
+              class="px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-sm font-medium transition"
+            >
+              {{ 'staff.manageShops' | translate }}
+            </button>
+          }
+        </div>
+      </ng-template>
+    </app-data-table>
     </div>
   }
 
-  <!-- Create Barber Modal -->
-  @if (showCreateBarberModal()) {
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      (click)="closeCreateBarberModal()"
-    >
-      <div
-        class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
-        (click)="$event.stopPropagation()"
+  <app-modal
+    [visible]="showCreateBarberModal()"
+    [title]="'staff.newBarber' | translate"
+    [fields]="createBarberFormFields"
+    [model]="createBarberForm"
+    formId="createBarberForm"
+    [errorMessage]="error()"
+    (close)="closeCreateBarberModal()"
+    (submit)="saveCreateBarber()"
+  >
+    <div appModalActions class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeCreateBarberModal()"
+        [disabled]="saving()"
+        class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition disabled:opacity-60"
       >
-        <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white">Νέος Κουρέας</h3>
-        </div>
-        <form (ngSubmit)="saveCreateBarber()" class="p-6 space-y-5">
-          @if (error()) {
-            <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 text-sm">
-              {{ error() }}
-            </div>
-          }
-          <div>
-            <label for="userId" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Χρήστης <span class="text-red-500">*</span>
-            </label>
-            <select
-              id="userId"
-              [(ngModel)]="createBarberForm.userId"
-              name="userId"
-              required
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            >
-              <option value="">— Επιλέξτε χρήστη —</option>
-              @for (u of eligibleUsers(); track u.id) {
-                <option [value]="u.id">{{ u.lastName }} {{ u.firstName }} ({{ u.email }})</option>
-              }
-            </select>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Μόνο χρήστες χωρίς προφίλ κουρέα.</p>
-          </div>
-          <div>
-            <label for="title" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Τίτλος</label>
-            <input
-              id="title"
-              type="text"
-              [(ngModel)]="createBarberForm.title"
-              name="title"
-              maxlength="100"
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-              placeholder="π.χ. Senior Barber"
-            />
-          </div>
-          <div>
-            <label for="bio" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Βιογραφικό</label>
-            <textarea
-              id="bio"
-              [(ngModel)]="createBarberForm.bio"
-              name="bio"
-              maxlength="500"
-              rows="3"
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
-              placeholder="Προαιρετικό..."
-            ></textarea>
-          </div>
-          <div class="flex items-center gap-2">
-            <input
-              id="isAvailable"
-              type="checkbox"
-              [(ngModel)]="createBarberForm.isAvailable"
-              name="isAvailable"
-              class="rounded border-slate-300 text-cyan-500 focus:ring-cyan-500"
-            />
-            <label for="isAvailable" class="text-sm font-medium text-slate-700 dark:text-slate-300">Διαθέσιμος για ραντεβού</label>
-          </div>
-          <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <button
-              type="button"
-              (click)="closeCreateBarberModal()"
-              [disabled]="saving()"
-              class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition disabled:opacity-60"
-            >
-              Ακύρωση
-            </button>
-            <button
-              type="submit"
-              [disabled]="saving()"
-              class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
-            >
-              {{ saving() ? 'Αποθήκευση...' : 'Αποθήκευση' }}
-            </button>
-          </div>
-        </form>
-      </div>
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button
+        type="submit"
+        [disabled]="saving()"
+        form="createBarberForm"
+        class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
+      >
+        {{ saving() ? ('common.saving' | translate) : ('common.save' | translate) }}
+      </button>
     </div>
-  }
+  </app-modal>
+
+  <app-modal
+    [visible]="showEditBarberModal()"
+    [title]="('staff.editBarber' | translate) + ' — ' + (barberForEdit() ? displayName(barberForEdit()!) : '')"
+    [fields]="editBarberFormFields"
+    [model]="editBarberForm"
+    formId="editBarberForm"
+    [errorMessage]="error()"
+    (close)="closeEditBarberModal()"
+    (submit)="saveEditBarber()"
+  >
+    <div appModalActions class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeEditBarberModal()"
+        [disabled]="saving()"
+        class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition disabled:opacity-60"
+      >
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button
+        type="submit"
+        [disabled]="saving()"
+        form="editBarberForm"
+        class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
+      >
+        {{ saving() ? ('common.saving' | translate) : ('common.save' | translate) }}
+      </button>
+    </div>
+  </app-modal>
 
   <!-- Barber Services Modal -->
   @if (showServicesModal()) {
@@ -257,22 +285,23 @@
       (click)="closeServicesModal()"
     >
       <div
-        class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col"
         (click)="$event.stopPropagation()"
       >
-        <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-700 shrink-0">
           <h3 class="text-xl font-bold text-slate-800 dark:text-white">
-            Υπηρεσίες — {{ barberForServices() ? displayName(barberForServices()!) : '' }}
+            {{ 'staff.servicesModalTitle' | translate }} — {{ barberForServices() ? displayName(barberForServices()!) : '' }}
           </h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">{{ 'staff.servicesModalHint' | translate }}</p>
         </div>
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto flex-1">
           @if (servicesModalError()) {
             <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 text-sm mb-4">
               {{ servicesModalError() }}
             </div>
           }
           @if (servicesModalLoading()) {
-            <p class="text-slate-500 dark:text-slate-400 text-center py-8">Φόρτωση...</p>
+            <p class="text-slate-500 dark:text-slate-400 text-center py-8">{{ 'common.loading' | translate }}</p>
           } @else {
             <ul class="space-y-2">
               @for (svc of allServices(); track svc.id) {
@@ -290,19 +319,28 @@
                   </label>
                 </li>
               } @empty {
-                <p class="text-slate-500 dark:text-slate-400 py-4">Δεν υπάρχουν ενεργές υπηρεσίες.</p>
+                <p class="text-slate-500 dark:text-slate-400 py-4">{{ 'staff.noServicesAvailable' | translate }}</p>
               }
             </ul>
           }
-          <div class="flex justify-end pt-6">
-            <button
-              type="button"
-              (click)="closeServicesModal()"
-              class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition"
-            >
-              Κλείσιμο
-            </button>
-          </div>
+        </div>
+        <div class="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 shrink-0">
+          <button
+            type="button"
+            (click)="closeServicesModal()"
+            [disabled]="servicesModalSaving()"
+            class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition disabled:opacity-60"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="button"
+            (click)="saveServicesModal()"
+            [disabled]="servicesModalSaving()"
+            class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
+          >
+            {{ servicesModalSaving() ? ('common.saving' | translate) : ('common.save' | translate) }}
+          </button>
         </div>
       </div>
     </div>
@@ -315,60 +353,61 @@
       (click)="closeShopsModal()"
     >
       <div
-        class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col"
         (click)="$event.stopPropagation()"
       >
-        <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-700 shrink-0">
           <h3 class="text-xl font-bold text-slate-800 dark:text-white">
-            Μαγαζιά — {{ managerForShops() ? displayName(managerForShops()!) : '' }}
+            {{ 'staff.shopsModalTitle' | translate }} — {{ managerForShops() ? displayName(managerForShops()!) : '' }}
           </h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Επιλέξτε σε ποια μαγαζιά ανατίθενται ο υπεύθυνος.</p>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">{{ 'staff.shopsModalHint' | translate }}</p>
         </div>
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto flex-1">
           @if (shopsModalError()) {
             <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 text-sm mb-4">
               {{ shopsModalError() }}
             </div>
           }
           @if (shopsModalLoading()) {
-            <p class="text-slate-500 dark:text-slate-400 text-center py-8">Φόρτωση...</p>
+            <p class="text-slate-500 dark:text-slate-400 text-center py-8">{{ 'common.loading' | translate }}</p>
           } @else {
             <ul class="space-y-2">
               @for (shop of allShops(); track shop.id) {
-                <li class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                  <span class="font-medium text-slate-800 dark:text-white">{{ shop.name }}</span>
-                  @if (isManagerAssignedToShop(shop.id)) {
-                    <button
-                      type="button"
-                      (click)="toggleManagerShop(shop.id)"
-                      class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium transition"
-                    >
-                      Αφαίρεση
-                    </button>
-                  } @else {
-                    <button
-                      type="button"
-                      (click)="toggleManagerShop(shop.id)"
-                      class="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-sm font-medium transition"
-                    >
-                      Ανάθεση
-                    </button>
-                  }
+                <li class="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
+                  <input
+                    type="checkbox"
+                    [id]="'shop-' + shop.id"
+                    [checked]="isManagerShopSelected(shop.id)"
+                    (change)="toggleManagerShopSelection(shop.id)"
+                    class="rounded border-slate-300 text-cyan-500 focus:ring-cyan-500"
+                  />
+                  <label [for]="'shop-' + shop.id" class="flex-1 cursor-pointer font-medium text-slate-800 dark:text-white">
+                    {{ shop.name }}
+                  </label>
                 </li>
               } @empty {
-                <p class="text-slate-500 dark:text-slate-400 py-4">Δεν υπάρχουν μαγαζιά.</p>
+                <p class="text-slate-500 dark:text-slate-400 py-4">{{ 'staff.noShopsAvailable' | translate }}</p>
               }
             </ul>
           }
-          <div class="flex justify-end pt-6">
-            <button
-              type="button"
-              (click)="closeShopsModal()"
-              class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition"
-            >
-              Κλείσιμο
-            </button>
-          </div>
+        </div>
+        <div class="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 shrink-0">
+          <button
+            type="button"
+            (click)="closeShopsModal()"
+            [disabled]="shopsModalSaving()"
+            class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition disabled:opacity-60"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="button"
+            (click)="saveShopsModal()"
+            [disabled]="shopsModalSaving()"
+            class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
+          >
+            {{ shopsModalSaving() ? ('common.saving' | translate) : ('common.save' | translate) }}
+          </button>
         </div>
       </div>
     </div>

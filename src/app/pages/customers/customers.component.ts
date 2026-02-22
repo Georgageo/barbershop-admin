@@ -7,11 +7,12 @@ import { CustomersService, Customer, CreateCustomerDto } from '../../features/cu
 import { TableColumn } from '../../components/table/table.models';
 import { TableComponent } from '../../components/table/table.component';
 import { DataTableCellDirective } from '../../components/table/table-cell.directive';
-
+import { CardListComponent } from '../../components/card-list/card-list.component';
+import { CardItemDirective } from '../../components/card-list/card-item.directive';
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, TableComponent, DataTableCellDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, TableComponent, DataTableCellDirective, CardListComponent, CardItemDirective],
   templateUrl: './customers.component.html',
   styleUrl: './customers.component.scss',
 })

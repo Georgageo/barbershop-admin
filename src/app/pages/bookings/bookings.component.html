@@ -1,43 +1,12 @@
 <div class="space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
+  <!-- Header: on mobile = title, filter, buttons; on desktop = title + buttons, then filter -->
+  <div class="flex flex-col flex-wrap gap-4 md:flex-row md:items-center md:justify-between">
+    <div class="order-1">
       <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ (isBarber ? 'bookings.mySchedule' : 'bookings.bookings') | translate }}</h2>
       <p class="text-slate-600 dark:text-slate-400 mt-1">{{ (isBarber ? 'bookings.myAppointments' : 'bookings.manageBookings') | translate }}</p>
     </div>
-    <div class="flex items-center gap-2">
-      @if (isAdminOrManager) {
-        <button
-          type="button"
-          (click)="openNewBookingModal()"
-          class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
-        >
-          {{ 'bookings.newBooking' | translate }}
-        </button>
-      }
-      <button
-        type="button"
-        (click)="load()"
-        [disabled]="loading()"
-        class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium disabled:opacity-60 transition"
-      >
-        {{ 'common.refresh' | translate }}
-      </button>
-    </div>
-  </div>
-
-  @if (error()) {
-    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3">
-      {{ error() }}
-    </div>
-  }
-
-  @if (loading()) {
-    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
-      {{ 'bookings.loadingBookings' | translate }}
-    </div>
-  } @else {
     @if (!isBarber) {
-      <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-4 mb-4 flex flex-wrap items-center gap-4">
+      <div class="order-2 w-full md:order-3 md:w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-4 flex flex-wrap items-center gap-4">
         <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ 'bookings.filter' | translate }}</span>
         <div class="flex items-center gap-2">
           <label for="filterShop" class="text-sm text-slate-600 dark:text-slate-400">{{ 'bookings.shop' | translate }}</label>
@@ -78,81 +47,144 @@
         }
       </div>
     }
-    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-[800px]">
-          <thead class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.dateTime' | translate }}</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.customer' | translate }}</th>
-              @if (!isBarber) {
-                <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.shop' | translate }}</th>
-                <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.barber' | translate }}</th>
-              }
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.service' | translate }}</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.status' | translate }}</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.actions' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-            @for (a of filteredList(); track a.id) {
-              <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/50">
-                <td class="py-4 px-4">
-                  <span class="font-medium text-slate-800 dark:text-white">{{ formatDate(a.startAt) }}</span>
-                  <span class="text-slate-500 dark:text-slate-400 block text-sm">{{ formatTime(a.startAt) }} – {{ formatTime(a.endAt) }}</span>
-                </td>
-                <td class="py-4 px-4">
-                  <span class="text-slate-800 dark:text-slate-200">{{ customerName(a) }}</span>
-                  @if (a.customer.phone) {
-                    <span class="text-slate-500 dark:text-slate-400 block text-sm">{{ a.customer.phone }}</span>
-                  }
-                </td>
-                @if (!isBarber) {
-                  <td class="py-4 px-4 text-slate-700 dark:text-slate-300">{{ a.shop?.name ?? '—' }}</td>
-                  <td class="py-4 px-4 text-slate-700 dark:text-slate-300">{{ barberName(a) }}</td>
-                }
-                <td class="py-4 px-4 text-slate-700 dark:text-slate-300">{{ a.service.name }}</td>
-                <td class="py-4 px-4">
-                  <span
-                    class="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium"
-                    [class]="{
-                      'bg-amber-100 text-amber-800': a.status === 'PENDING',
-                      'bg-blue-100 text-blue-800': a.status === 'CONFIRMED',
-                      'bg-indigo-100 text-indigo-800': a.status === 'IN_PROGRESS',
-                      'bg-green-100 text-green-800': a.status === 'COMPLETED',
-                      'bg-slate-100 text-slate-700': a.status === 'CANCELLED',
-                      'bg-red-100 text-red-800': a.status === 'NO_SHOW'
-                    }"
-                  >
-                    {{ statusLabel(a.status) }}
-                  </span>
-                </td>
-                <td class="py-4 px-4">
-                  <select
-                    [value]="a.status"
-                    [disabled]="updatingId() === a.id"
-                    (change)="changeStatus(a, $any($event.target).value)"
-                    class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent disabled:opacity-60"
-                  >
-                    @for (opt of statusOptions; track opt.value) {
-                      <option [value]="opt.value">{{ opt.label }}</option>
-                    }
-                  </select>
-                  @if (updatingId() === a.id) {
-                    <span class="ml-2 text-xs text-slate-500">{{ 'bookings.savingStatus' | translate }}</span>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td [attr.colspan]="isBarber ? 5 : 7" class="py-12 px-4 text-center text-slate-500">
-                  {{ isBarber ? ('bookings.noAppointmentsBarber' | translate) : (filterShopId() || filterStatus() ? ('bookings.noBookingsFilter' | translate) : ('bookings.noBookings' | translate)) }}
-                </td>
-              </tr>
+    <div class="order-3 flex items-center gap-2 md:order-2">
+      @if (isAdminOrManager) {
+        <button
+          type="button"
+          (click)="openNewBookingModal()"
+          class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
+        >
+          {{ 'bookings.newBooking' | translate }}
+        </button>
+      }
+      <button
+        type="button"
+        (click)="load()"
+        [disabled]="loading()"
+        class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium disabled:opacity-60 transition"
+      >
+        {{ 'common.refresh' | translate }}
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3">
+      {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
+      {{ 'bookings.loadingBookings' | translate }}
+    </div>
+  } @else {
+    <!-- Mobile: cards -->
+    <div class="md:hidden">
+      <app-card-list
+        [data]="filteredList()"
+        [loading]="loading()"
+        [emptyMessage]="getBookingsEmptyMessage()"
+        trackBy="id"
+      >
+        <ng-template appCardItem let-a>
+          <div class="space-y-2">
+            <p class="font-semibold text-slate-800 dark:text-white">{{ formatDate(a.startAt) }}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400">{{ formatTime(a.startAt) }} – {{ formatTime(a.endAt) }}</p>
+            <p class="text-slate-700 dark:text-slate-200">{{ customerName(a) }}</p>
+            @if (a.customer.phone) {
+              <p class="text-sm text-slate-500 dark:text-slate-400">{{ a.customer.phone }}</p>
             }
-          </tbody>
-        </table>
-      </div>
+            @if (!isBarber) {
+              <p class="text-sm text-slate-600 dark:text-slate-400">{{ 'bookings.shop' | translate }}: {{ a.shop?.name ?? '—' }}</p>
+              <p class="text-sm text-slate-600 dark:text-slate-400">{{ 'bookings.barber' | translate }}: {{ barberName(a) }}</p>
+            }
+            <p class="text-sm text-slate-700 dark:text-slate-300">{{ a.service.name }}</p>
+            <span
+              class="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium"
+              [class]="{
+                'bg-amber-100 text-amber-800': a.status === 'PENDING',
+                'bg-blue-100 text-blue-800': a.status === 'CONFIRMED',
+                'bg-indigo-100 text-indigo-800': a.status === 'IN_PROGRESS',
+                'bg-green-100 text-green-800': a.status === 'COMPLETED',
+                'bg-slate-100 text-slate-700': a.status === 'CANCELLED',
+                'bg-red-100 text-red-800': a.status === 'NO_SHOW'
+              }"
+            >
+              {{ statusLabel(a.status) }}
+            </span>
+            <div class="pt-2">
+              <select
+                [value]="a.status"
+                [disabled]="updatingId() === a.id"
+                (change)="changeStatus(a, $any($event.target).value)"
+                class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-full max-w-xs"
+              >
+                @for (opt of statusOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+              @if (updatingId() === a.id) {
+                <span class="ml-2 text-xs text-slate-500">{{ 'bookings.savingStatus' | translate }}</span>
+              }
+            </div>
+          </div>
+        </ng-template>
+      </app-card-list>
+    </div>
+
+    <!-- Desktop: table -->
+    <div class="hidden md:block">
+      <app-data-table
+        [data]="filteredList()"
+        [columns]="isBarber ? barberColumns : adminColumns"
+        [loading]="loading()"
+        [emptyMessage]="getBookingsEmptyMessage()"
+      >
+        <ng-template appTableCell="dateTime" let-a>
+          <span class="font-medium text-slate-800 dark:text-white">{{ formatDate(a.startAt) }}</span>
+          <span class="text-slate-500 dark:text-slate-400 block text-sm">{{ formatTime(a.startAt) }} – {{ formatTime(a.endAt) }}</span>
+        </ng-template>
+        <ng-template appTableCell="customer" let-a>
+          <span class="text-slate-800 dark:text-slate-200">{{ customerName(a) }}</span>
+          @if (a.customer.phone) {
+            <span class="text-slate-500 dark:text-slate-400 block text-sm">{{ a.customer.phone }}</span>
+          }
+        </ng-template>
+        <ng-template appTableCell="shop" let-a>{{ a.shop?.name ?? '—' }}</ng-template>
+        <ng-template appTableCell="barber" let-a>{{ barberName(a) }}</ng-template>
+        <ng-template appTableCell="service" let-a>{{ a.service.name }}</ng-template>
+        <ng-template appTableCell="status" let-a>
+          <span
+            class="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium"
+            [class]="{
+              'bg-amber-100 text-amber-800': a.status === 'PENDING',
+              'bg-blue-100 text-blue-800': a.status === 'CONFIRMED',
+              'bg-indigo-100 text-indigo-800': a.status === 'IN_PROGRESS',
+              'bg-green-100 text-green-800': a.status === 'COMPLETED',
+              'bg-slate-100 text-slate-700': a.status === 'CANCELLED',
+              'bg-red-100 text-red-800': a.status === 'NO_SHOW'
+            }"
+          >
+            {{ statusLabel(a.status) }}
+          </span>
+        </ng-template>
+        <ng-template appTableCell="statusChange" let-a>
+          <select
+            [value]="a.status"
+            [disabled]="updatingId() === a.id"
+            (change)="changeStatus(a, $any($event.target).value)"
+            class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent disabled:opacity-60"
+          >
+            @for (opt of statusOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+          @if (updatingId() === a.id) {
+            <span class="ml-2 text-xs text-slate-500">{{ 'bookings.savingStatus' | translate }}</span>
+          }
+        </ng-template>
+      </app-data-table>
     </div>
   }
 

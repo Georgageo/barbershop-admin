@@ -8,11 +8,26 @@ import { TableAction, TableColumn } from '../../components/table/table.models';
 import { TableComponent } from '../../components/table/table.component';
 import { DataTableCellDirective } from '../../components/table/table-cell.directive';
 import { Subscription } from 'rxjs';
+import { CardListComponent } from '../../components/card-list/card-list.component';
+import { CardItemDirective } from '../../components/card-list/card-item.directive';
+import { ModalComponent } from '../../components/modal/modal.component';
+import { ModalActionsDirective } from '../../components/modal/modal-actions.directive';
+import { ModalFieldConfig } from '../../components/modal/modal.models';
 
 @Component({
   selector: 'app-services',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, TableComponent, DataTableCellDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    TableComponent,
+    DataTableCellDirective,
+    CardListComponent,
+    CardItemDirective,
+    ModalComponent,
+    ModalActionsDirective,
+  ],
   templateUrl: './services.component.html',
   styleUrl: './services.component.scss',
 })
@@ -27,18 +42,18 @@ export class ServicesComponent implements OnInit, OnDestroy {
   private updateTranslations(): void {
     const t = (key: string) => this.translate.instant(key);
     this.columns = [
-      { field: 'name',     header: t('services.serviceLabel'), sortable: true },
+      { field: 'name', header: t('services.serviceLabel'), sortable: true },
       { field: 'duration', header: t('common.duration') },
-      { field: 'price',    header: t('common.price'), sortable: true },
-      { field: 'status',   header: t('common.status') },
+      { field: 'price', header: t('common.price'), sortable: true },
+      { field: 'status', header: t('common.status') },
     ];
     this.actions = [
-      { icon: 'pi pi-pencil',  tooltip: t('common.edit'), onClick: (s) => this.openEditModal(s) },
+      { icon: 'pi pi-pencil', tooltip: t('common.edit'), onClick: (s) => this.openEditModal(s) },
       { icon: 'pi pi-power-off', tooltip: t('common.toggleActive'), severity: 'warn', onClick: (s) => this.toggleActive(s) },
-      { icon: 'pi pi-trash',   tooltip: t('common.delete'), severity: 'danger', onClick: (s) => this.confirmDelete(s) },
+      { icon: 'pi pi-trash', tooltip: t('common.delete'), severity: 'danger', onClick: (s) => this.confirmDelete(s) },
     ];
   }
-  
+
   list = signal<Service[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
@@ -47,20 +62,54 @@ export class ServicesComponent implements OnInit, OnDestroy {
   deletingId = signal<string | null>(null);
   saving = signal(false);
 
-  form: CreateServiceDto = {
+  /** Form model for the modal (keys match serviceFormFields). Price in euros for display. */
+  form: Record<string, unknown> = {
     name: '',
     description: '',
     durationMinutes: 30,
-    priceCents: 0,
+    priceEuros: 25,
   };
 
-  // Helper for price input (in euros)
-  get priceEuros(): number {
-    return this.form.priceCents / 100;
-  }
-
-  set priceEuros(value: number) {
-    this.form.priceCents = Math.round(value * 100);
+  get serviceFormFields(): ModalFieldConfig[] {
+    const t = (key: string) => this.translate.instant(key);
+    return [
+      {
+        key: 'name',
+        label: t('common.name'),
+        type: 'text',
+        required: true,
+        placeholder: t('services.namePlaceholder'),
+        maxLength: 100,
+      },
+      {
+        key: 'description',
+        label: t('common.description'),
+        type: 'textarea',
+        placeholder: t('services.descriptionPlaceholder'),
+        maxLength: 500,
+        rows: 3,
+      },
+      {
+        key: 'durationMinutes',
+        label: t('services.durationMinutes'),
+        type: 'number',
+        required: true,
+        min: 1,
+        placeholder: '30',
+        width: 'half',
+      },
+      {
+        key: 'priceEuros',
+        label: t('services.priceEur'),
+        type: 'number',
+        required: true,
+        min: 0,
+        step: 0.01,
+        placeholder: '25.00',
+        hint: t('services.priceHint'),
+        width: 'half',
+      },
+    ];
   }
 
   ngOnInit(): void {
@@ -95,7 +144,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
       name: '',
       description: '',
       durationMinutes: 30,
-      priceCents: 0,
+      priceEuros: 25,
     };
     this.error.set(null);
     this.showModal.set(true);
@@ -107,7 +156,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
       name: service.name,
       description: service.description ?? '',
       durationMinutes: service.durationMinutes,
-      priceCents: service.priceCents,
+      priceEuros: service.priceCents / 100,
     };
     this.error.set(null);
     this.showModal.set(true);
@@ -120,7 +169,10 @@ export class ServicesComponent implements OnInit, OnDestroy {
   }
 
   save(): void {
-    if (!this.form.name.trim() || this.form.durationMinutes < 1 || this.form.priceCents < 0) {
+    const name = String(this.form['name'] ?? '').trim();
+    const durationMinutes = Number(this.form['durationMinutes'] ?? 0);
+    const priceEuros = Number(this.form['priceEuros'] ?? 0);
+    if (!name || durationMinutes < 1 || priceEuros < 0) {
       this.error.set(this.translate.instant('services.fillRequired'));
       return;
     }
@@ -130,10 +182,10 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
     const editing = this.editingService();
     const payload = {
-      name: this.form.name.trim(),
-      description: this.form.description?.trim() || undefined,
-      durationMinutes: this.form.durationMinutes,
-      priceCents: Math.round(this.form.priceCents),
+      name,
+      description: (this.form['description'] as string)?.trim() || undefined,
+      durationMinutes,
+      priceCents: Math.round(priceEuros * 100),
     };
 
     const request = editing

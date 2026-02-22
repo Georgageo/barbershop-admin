@@ -1,8 +1,9 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription, forkJoin } from 'rxjs';
 import { UsersService, StaffMember } from '../../features/users/users.service';
 import { UserEligibleForBarber } from '../../core/models/barber.model';
 import { BarbersService } from '../../features/barbers/barbers.service';
@@ -11,22 +12,56 @@ import { ShopsService, Shop } from '../../features/shops/shops.service';
 import { ShopManagersService } from '../../features/shop-managers/shop-managers.service';
 import { CreateBarberDto, UpdateBarberDto } from '../../core/models/barber.model';
 import { Service } from '../../core/models/service.model';
+import { TableColumn } from '../../components/table/table.models';
+import { TableComponent } from '../../components/table/table.component';
+import { DataTableCellDirective } from '../../components/table/table-cell.directive';
+import { CardListComponent } from '../../components/card-list/card-list.component';
+import { CardItemDirective } from '../../components/card-list/card-item.directive';
+import { ModalComponent } from '../../components/modal/modal.component';
+import { ModalActionsDirective } from '../../components/modal/modal-actions.directive';
+import { ModalFieldConfig } from '../../components/modal/modal.models';
 
 export type StaffFilter = 'all' | 'barbers' | 'managers';
 
 @Component({
   selector: 'app-staff',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    TranslateModule,
+    TableComponent,
+    DataTableCellDirective,
+    CardListComponent,
+    CardItemDirective,
+    ModalComponent,
+    ModalActionsDirective,
+  ],
   templateUrl: './staff.component.html',
   styleUrl: './staff.component.scss',
 })
-export class StaffComponent implements OnInit {
+export class StaffComponent implements OnInit, OnDestroy {
   private usersService = inject(UsersService);
   private barbersService = inject(BarbersService);
   private servicesService = inject(ServicesService);
   private shopsService = inject(ShopsService);
   private shopManagersService = inject(ShopManagersService);
+  private translate = inject(TranslateService);
+  private langSub?: Subscription;
+
+  columns: TableColumn[] = [];
+
+  private updateTranslations(): void {
+    const t = (key: string) => this.translate.instant(key);
+    this.columns = [
+      { field: 'name', header: t('common.name'), sortable: true },
+      { field: 'email', header: t('common.email'), sortable: true },
+      { field: 'role', header: t('invitations.role') },
+      { field: 'details', header: t('staff.details') },
+      { field: 'actions', header: t('common.actions') },
+    ];
+  }
 
   list = signal<StaffMember[]>([]);
   loading = signal(true);
@@ -42,30 +77,118 @@ export class StaffComponent implements OnInit {
   });
 
   showCreateBarberModal = signal(false);
+  showEditBarberModal = signal(false);
+  barberForEdit = signal<StaffMember | null>(null);
   showServicesModal = signal(false);
   showShopsModal = signal(false);
   saving = signal(false);
   eligibleUsers = signal<UserEligibleForBarber[]>([]);
-  createBarberForm: CreateBarberDto = {
+
+  /** Form model for Create Barber modal (keys match createBarberFormFields). */
+  createBarberForm: Record<string, unknown> = {
     userId: '',
-    bio: '',
     title: '',
+    bio: '',
     isAvailable: true,
   };
+
+  /** Form model for Edit Barber modal (keys match editBarberFormFields). */
+  editBarberForm: Record<string, unknown> = {
+    title: '',
+    bio: '',
+    isAvailable: true,
+  };
+
+  get createBarberFormFields(): ModalFieldConfig[] {
+    const t = (key: string) => this.translate.instant(key);
+    return [
+      {
+        key: 'userId',
+        label: t('staff.userLabel'),
+        type: 'select',
+        required: true,
+        placeholder: t('staff.selectUser'),
+        hint: t('staff.userHint'),
+        options: this.eligibleUsers().map((u) => ({
+          value: u.id,
+          label: `${u.lastName} ${u.firstName} (${u.email})`,
+        })),
+      },
+      {
+        key: 'title',
+        label: t('staff.barberTitle'),
+        type: 'text',
+        placeholder: t('staff.barberTitlePlaceholder'),
+        maxLength: 100,
+      },
+      {
+        key: 'bio',
+        label: t('staff.barberBio'),
+        type: 'textarea',
+        placeholder: t('common.optional'),
+        maxLength: 500,
+        rows: 3,
+      },
+      {
+        key: 'isAvailable',
+        label: '',
+        type: 'checkbox',
+        placeholder: t('staff.availableForBookings'),
+      },
+    ];
+  }
+
+  get editBarberFormFields(): ModalFieldConfig[] {
+    const t = (key: string) => this.translate.instant(key);
+    return [
+      {
+        key: 'title',
+        label: t('staff.barberTitle'),
+        type: 'text',
+        placeholder: t('staff.barberTitlePlaceholder'),
+        maxLength: 100,
+      },
+      {
+        key: 'bio',
+        label: t('staff.barberBio'),
+        type: 'textarea',
+        placeholder: t('common.optional'),
+        maxLength: 500,
+        rows: 3,
+      },
+      {
+        key: 'isAvailable',
+        label: '',
+        type: 'checkbox',
+        placeholder: t('staff.availableForBookings'),
+      },
+    ];
+  }
 
   barberForServices = signal<StaffMember | null>(null);
   allServices = signal<Service[]>([]);
   assignedServiceIds = signal<Set<string>>(new Set());
+  initialServiceIds = signal<Set<string>>(new Set());
   servicesModalLoading = signal(false);
+  servicesModalSaving = signal(false);
   servicesModalError = signal<string | null>(null);
 
   managerForShops = signal<StaffMember | null>(null);
   allShops = signal<Shop[]>([]);
+  selectedShopIds = signal<Set<string>>(new Set());
+  initialShopIds = signal<Set<string>>(new Set());
   shopsModalLoading = signal(false);
+  shopsModalSaving = signal(false);
   shopsModalError = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.updateTranslations();
+    this.langSub = this.translate.onLangChange.subscribe(() => this.updateTranslations());
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
   }
 
   load(): void {
@@ -92,7 +215,9 @@ export class StaffComponent implements OnInit {
   }
 
   roleLabel(role: string): string {
-    return role === 'BARBER' ? 'Κουρέας' : 'Υπεύθυνος μαγαζιού';
+    return role === 'BARBER'
+      ? this.translate.instant('invitations.roleBarber')
+      : this.translate.instant('invitations.roleManager');
   }
 
   managerShopsSummary(m: StaffMember): string {
@@ -101,7 +226,7 @@ export class StaffComponent implements OnInit {
   }
 
   openCreateBarberModal(): void {
-    this.createBarberForm = { userId: '', bio: '', title: '', isAvailable: true };
+    this.createBarberForm = { userId: '', title: '', bio: '', isAvailable: true };
     this.error.set(null);
     this.usersService.getEligibleForBarber().subscribe({
       next: (users) => {
@@ -116,11 +241,63 @@ export class StaffComponent implements OnInit {
     this.showCreateBarberModal.set(false);
   }
 
-  saveCreateBarber(): void {
-    if (!this.createBarberForm.userId) return;
+  openEditBarberModal(m: StaffMember): void {
+    if (m.role !== 'BARBER' || !m.barberId) return;
+    this.barberForEdit.set(m);
+    this.error.set(null);
+    this.barbersService.getOne(m.barberId).subscribe({
+      next: (b) => {
+        this.editBarberForm = {
+          title: b.title ?? '',
+          bio: b.bio ?? '',
+          isAvailable: b.isAvailable ?? true,
+        };
+        this.showEditBarberModal.set(true);
+      },
+      error: (err) => this.error.set(err.error?.message ?? this.translate.instant('staff.errorLoadBarber')),
+    });
+  }
+
+  closeEditBarberModal(): void {
+    this.showEditBarberModal.set(false);
+    this.barberForEdit.set(null);
+  }
+
+  saveEditBarber(): void {
+    const m = this.barberForEdit();
+    if (!m?.barberId) return;
     this.saving.set(true);
     this.error.set(null);
-    this.barbersService.create(this.createBarberForm).subscribe({
+    const payload: UpdateBarberDto = {
+      title: (this.editBarberForm['title'] as string)?.trim() || undefined,
+      bio: (this.editBarberForm['bio'] as string)?.trim() || undefined,
+      isAvailable: this.editBarberForm['isAvailable'] as boolean,
+    };
+    this.barbersService.update(m.barberId, payload).subscribe({
+      next: () => {
+        this.closeEditBarberModal();
+        this.load();
+        this.saving.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message ?? this.translate.instant('staff.errorUpdateBarber'));
+        this.saving.set(false);
+      },
+    });
+  }
+
+  saveCreateBarber(): void {
+    const userId = String(this.createBarberForm['userId'] ?? '').trim();
+    if (!userId) return;
+    this.saving.set(true);
+    this.error.set(null);
+    const payload: CreateBarberDto = {
+      userId,
+      title: (this.createBarberForm['title'] as string)?.trim() || undefined,
+      bio: (this.createBarberForm['bio'] as string)?.trim() || undefined,
+      isAvailable: this.createBarberForm['isAvailable'] as boolean,
+    };
+    this.barbersService.create(payload).subscribe({
       next: () => {
         this.closeCreateBarberModal();
         this.load();
@@ -156,6 +333,7 @@ export class StaffComponent implements OnInit {
       next: (b) => {
         const ids = new Set((b.barberServices ?? []).map((bs) => bs.serviceId));
         this.assignedServiceIds.set(ids);
+        this.initialServiceIds.set(new Set(ids));
         this.servicesModalLoading.set(false);
       },
       error: (err) => {
@@ -174,27 +352,49 @@ export class StaffComponent implements OnInit {
     return this.assignedServiceIds().has(serviceId);
   }
 
+  /** Only toggles local selection; API is called on Save. */
   toggleBarberService(serviceId: string): void {
-    const m = this.barberForServices();
-    if (!m?.barberId) return;
     const assigned = new Set(this.assignedServiceIds());
     if (assigned.has(serviceId)) {
-      this.barbersService.removeService(m.barberId, serviceId).subscribe({
-        next: () => {
-          assigned.delete(serviceId);
-          this.assignedServiceIds.set(new Set(assigned));
-        },
-        error: () => this.servicesModalError.set('Σφάλμα αφαίρεσης υπηρεσίας'),
-      });
+      assigned.delete(serviceId);
     } else {
-      this.barbersService.addService(m.barberId, serviceId).subscribe({
-        next: () => {
-          assigned.add(serviceId);
-          this.assignedServiceIds.set(new Set(assigned));
-        },
-        error: () => this.servicesModalError.set('Σφάλμα προσθήκης υπηρεσίας'),
-      });
+      assigned.add(serviceId);
     }
+    this.assignedServiceIds.set(assigned);
+  }
+
+  saveServicesModal(): void {
+    const m = this.barberForServices();
+    if (!m?.barberId) return;
+    const initial = this.initialServiceIds();
+    const current = this.assignedServiceIds();
+    const toAdd = [...current].filter((id) => !initial.has(id));
+    const toRemove = [...initial].filter((id) => !current.has(id));
+    if (toAdd.length === 0 && toRemove.length === 0) {
+      this.closeServicesModal();
+      return;
+    }
+    this.servicesModalSaving.set(true);
+    this.servicesModalError.set(null);
+    const addRequests = toAdd.map((serviceId) =>
+      this.barbersService.addService(m.barberId!, serviceId)
+    );
+    const removeRequests = toRemove.map((serviceId) =>
+      this.barbersService.removeService(m.barberId!, serviceId)
+    );
+    forkJoin([...addRequests, ...removeRequests]).subscribe({
+      next: () => {
+        this.closeServicesModal();
+        this.load();
+        this.servicesModalSaving.set(false);
+      },
+      error: (err) => {
+        this.servicesModalError.set(
+          err.error?.message ?? this.translate.instant('staff.errorSaveServices')
+        );
+        this.servicesModalSaving.set(false);
+      },
+    });
   }
 
   openShopsModal(m: StaffMember): void {
@@ -203,6 +403,9 @@ export class StaffComponent implements OnInit {
     this.shopsModalError.set(null);
     this.shopsModalLoading.set(true);
     this.showShopsModal.set(true);
+    const initialIds = new Set(m.managedShops?.map((ms) => ms.shopId) ?? []);
+    this.selectedShopIds.set(initialIds);
+    this.initialShopIds.set(new Set(initialIds));
     this.shopsService.getList().subscribe({
       next: (shops) => {
         this.allShops.set(shops);
@@ -220,25 +423,52 @@ export class StaffComponent implements OnInit {
     this.managerForShops.set(null);
   }
 
-  isManagerAssignedToShop(shopId: string): boolean {
-    const m = this.managerForShops();
-    return m?.managedShops?.some((s) => s.shopId === shopId) ?? false;
+  isManagerShopSelected(shopId: string): boolean {
+    return this.selectedShopIds().has(shopId);
   }
 
-  toggleManagerShop(shopId: string): void {
+  /** Only toggles local selection; API is called on Save. */
+  toggleManagerShopSelection(shopId: string): void {
+    const selected = new Set(this.selectedShopIds());
+    if (selected.has(shopId)) {
+      selected.delete(shopId);
+    } else {
+      selected.add(shopId);
+    }
+    this.selectedShopIds.set(selected);
+  }
+
+  saveShopsModal(): void {
     const m = this.managerForShops();
     if (!m) return;
-    const assigned = this.isManagerAssignedToShop(shopId);
-    const request = assigned
-      ? this.shopManagersService.removeManagerFromShop(shopId, m.id)
-      : this.shopManagersService.addManagerToShop(shopId, m.id);
-    request.subscribe({
+    const initial = this.initialShopIds();
+    const current = this.selectedShopIds();
+    const toAdd = [...current].filter((id) => !initial.has(id));
+    const toRemove = [...initial].filter((id) => !current.has(id));
+    if (toAdd.length === 0 && toRemove.length === 0) {
+      this.closeShopsModal();
+      return;
+    }
+    this.shopsModalSaving.set(true);
+    this.shopsModalError.set(null);
+    const addRequests = toAdd.map((shopId) =>
+      this.shopManagersService.addManagerToShop(shopId, m.id)
+    );
+    const removeRequests = toRemove.map((shopId) =>
+      this.shopManagersService.removeManagerFromShop(shopId, m.id)
+    );
+    forkJoin([...addRequests, ...removeRequests]).subscribe({
       next: () => {
+        this.closeShopsModal();
         this.load();
-        const updated = this.list().find((s) => s.id === m.id);
-        if (updated) this.managerForShops.set(updated);
+        this.shopsModalSaving.set(false);
       },
-      error: () => this.shopsModalError.set(assigned ? 'Σφάλμα αφαίρεσης' : 'Σφάλμα ανάθεσης'),
+      error: (err) => {
+        this.shopsModalError.set(
+          err.error?.message ?? this.translate.instant('staff.errorSaveShops')
+        );
+        this.shopsModalSaving.set(false);
+      },
     });
   }
 }

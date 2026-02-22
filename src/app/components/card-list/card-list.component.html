@@ -1,0 +1,19 @@
+@if (loading) {
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
+      {{ 'common.loading' | translate }}
+    </div>
+  } @else if (!data?.length) {
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
+      {{ emptyMessage ?? ('table.emptyDefault' | translate) }}
+    </div>
+  } @else {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (item of data; track trackBy) {
+        <p-card styleClass="h-full">
+          @if (cardItemTemplate?.template; as tmpl) {
+            <ng-container *ngTemplateOutlet="tmpl; context: { $implicit: item }" />
+          }
+        </p-card>
+      }
+    </div>
+  }

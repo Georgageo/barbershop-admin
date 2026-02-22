@@ -26,158 +26,125 @@
       {{ 'shops.loadingShops' | translate }}
     </div>
   } @else {
-    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-[600px]">
-          <thead class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.name' | translate }}</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.phone' | translate }}</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.address' | translate }}</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.actions' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-            @for (shop of list(); track shop.id) {
-              <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/50">
-                <td class="py-4 px-4">
-                  <span class="font-medium text-slate-800 dark:text-white">{{ shop.name }}</span>
-                </td>
-                <td class="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  {{ shop.phone || '—' }}
-                </td>
-                <td class="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  {{ shop.address || '—' }}
-                </td>
-                <td class="py-4 px-4">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <a
-                      [routerLink]="['/admin/shops', shop.id, 'hours']"
-                      class="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-sm font-medium transition"
-                    >
-                      🕐 {{ 'shops.openingHours' | translate }}
-                    </a>
-                    @if (canManageShops) {
-                      <button
-                        type="button"
-                        (click)="openEditModal(shop)"
-                        class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium transition"
-                      >
-                        Επεξεργασία
-                      </button>
-                      <button
-                        type="button"
-                        (click)="confirmDelete(shop)"
-                        [disabled]="deletingId() === shop.id"
-                        class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-medium transition disabled:opacity-60"
-                      >
-                        {{ deletingId() === shop.id ? 'Διαγραφή...' : 'Διαγραφή' }}
-                      </button>
-                    }
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="4" class="py-12 px-4 text-center text-slate-500 dark:text-slate-400">
-                  Δεν υπάρχουν μαγαζιά. Προσθέστε ένα νέο μαγαζί.
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  }
-
-  <!-- Modal Νέο / Επεξεργασία μαγαζιού -->
-  @if (showModal()) {
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      (click)="closeModal()"
-    >
-      <div
-        class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
-        (click)="$event.stopPropagation()"
+    <!-- Mobile: cards -->
+    <div class="md:hidden">
+      <app-card-list
+        [data]="list()"
+        [loading]="loading()"
+        [emptyMessage]="'shops.noShops' | translate"
+        trackBy="id"
       >
-        <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white">
-            {{ editingShop() ? 'Επεξεργασία μαγαζιού' : 'Νέο μαγαζί' }}
-          </h3>
-        </div>
-
-        <form (ngSubmit)="save()" class="p-6 space-y-5">
-          @if (error()) {
-            <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 text-sm">
-              {{ error() }}
+        <ng-template appCardItem let-shop>
+          <div class="space-y-2">
+            <p class="font-semibold text-slate-800 dark:text-white">{{ shop.name }}</p>
+            @if (shop.phone) {
+              <p class="text-sm text-slate-600 dark:text-slate-400">{{ shop.phone }}</p>
+            }
+            @if (shop.address) {
+              <p class="text-sm text-slate-600 dark:text-slate-400">{{ shop.address }}</p>
+            }
+            <div class="flex flex-wrap items-center gap-2 pt-2">
+              <a
+                [routerLink]="['/admin/shops', shop.id, 'hours']"
+                class="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-sm font-medium transition"
+              >
+                🕐 {{ 'shops.openingHours' | translate }}
+              </a>
+              @if (canManageShops) {
+                <button
+                  type="button"
+                  (click)="openEditModal(shop)"
+                  class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200"
+                  [title]="'common.edit' | translate"
+                >
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  (click)="confirmDelete(shop)"
+                  [disabled]="deletingId() === shop.id"
+                  class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-800 dark:text-red-200"
+                  [title]="'common.delete' | translate"
+                >
+                  <i class="pi pi-trash"></i>
+                </button>
+              }
             </div>
-          }
-
-          <div>
-            <label for="shop-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Όνομα <span class="text-red-500">*</span>
-            </label>
-            <input
-              id="shop-name"
-              type="text"
-              [(ngModel)]="form.name"
-              name="name"
-              maxlength="200"
-              required
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
-              placeholder="π.χ. Κεντρικό Κουρείο"
-            />
           </div>
+        </ng-template>
+      </app-card-list>
+    </div>
 
-          <div>
-            <label for="shop-phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Τηλέφωνο
-            </label>
-            <input
-              id="shop-phone"
-              type="text"
-              [(ngModel)]="form.phone"
-              name="phone"
-              maxlength="50"
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
-              placeholder="210 1234567"
-            />
-          </div>
-
-          <div>
-            <label for="shop-address" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Διεύθυνση
-            </label>
-            <textarea
-              id="shop-address"
-              [(ngModel)]="form.address"
-              name="address"
-              maxlength="500"
-              rows="2"
-              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition resize-none"
-              placeholder="Οδός, αριθμός, περιοχή..."
-            ></textarea>
-          </div>
-
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <button
-              type="button"
-              (click)="closeModal()"
-              [disabled]="saving()"
-              class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition disabled:opacity-60"
+    <!-- Desktop: table -->
+    <div class="hidden md:block">
+      <app-data-table
+        [data]="list()"
+        [columns]="columns"
+        [loading]="loading()"
+        [emptyMessage]="'shops.noShops' | translate"
+      >
+        <ng-template appTableCell="phone" let-shop>{{ shop.phone || '—' }}</ng-template>
+        <ng-template appTableCell="address" let-shop>{{ shop.address || '—' }}</ng-template>
+        <ng-template appTableCell="actions" let-shop>
+          <div class="flex flex-wrap items-center gap-2">
+            <a
+              [routerLink]="['/admin/shops', shop.id, 'hours']"
+              class="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-sm font-medium transition"
             >
-              Ακύρωση
-            </button>
-            <button
-              type="submit"
-              [disabled]="saving()"
-              class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
-            >
-              {{ saving() ? 'Αποθήκευση...' : 'Αποθήκευση' }}
-            </button>
+              🕐 {{ 'shops.openingHours' | translate }}
+            </a>
+            @if (canManageShops) {
+              <button
+                type="button"
+                (click)="openEditModal(shop)"
+                class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200"
+                [title]="'common.edit' | translate"
+              >
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button
+                type="button"
+                (click)="confirmDelete(shop)"
+                [disabled]="deletingId() === shop.id"
+                class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-800 dark:text-red-200"
+                [title]="'common.delete' | translate"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
+            }
           </div>
-        </form>
-      </div>
+        </ng-template>
+      </app-data-table>
     </div>
   }
+
+  <app-modal
+    [visible]="showModal()"
+    [title]="editingShop() ? ('shops.editShop' | translate) : ('shops.newShopTitle' | translate)"
+    [fields]="shopFormFields"
+    [model]="form"
+    formId="shopForm"
+    [errorMessage]="error()"
+    (close)="closeModal()"
+    (submit)="save()"
+  >
+    <div appModalActions class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeModal()"
+        [disabled]="saving()"
+        class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition disabled:opacity-60"
+      >
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button
+        type="submit"
+        [disabled]="saving()"
+        form="shopForm"
+        class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
+      >
+        {{ saving() ? ('common.saving' | translate) : ('common.save' | translate) }}
+      </button>
+    </div>
+  </app-modal>
 </div>
