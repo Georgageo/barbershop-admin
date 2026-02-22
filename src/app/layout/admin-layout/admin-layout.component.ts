@@ -1,10 +1,16 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { LANG_STORAGE_KEY } from '../../app.component';
+
+/** Tailwind lg breakpoint (1024px) – sidebar is persistent above this. */
+const SIDEBAR_BREAKPOINT = '(min-width: 1024px)';
 
 @Component({
   selector: 'app-admin-layout',
@@ -15,9 +21,13 @@ import { LANG_STORAGE_KEY } from '../../app.component';
 })
 export class AdminLayoutComponent implements OnInit {
   private router = inject(Router);
+  private breakpoint = inject(BreakpointObserver);
+  private destroyRef = inject(DestroyRef);
   sidebarOpen = true;
   userMenuOpen = signal(false);
   langDropdownOpen = signal(false);
+  /** True when viewport is lg or larger (sidebar visible by default, no overlay). */
+  isDesktop = signal(true);
 
   constructor(
     public auth: AuthService,
@@ -62,6 +72,38 @@ export class AdminLayoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Mobile-friendly: sidebar closed on small screens, open on lg+
+    this.breakpoint
+      .observe(SIDEBAR_BREAKPOINT)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((state) => {
+        const desktop = state.matches;
+        this.isDesktop.set(desktop);
+        if (desktop) {
+          this.sidebarOpen = true;  // show sidebar when resizing to desktop
+        } else {
+          this.sidebarOpen = false;
+        }
+      });
+    // Set initial state (observe is async, so run once with current value)
+    const initialDesktop = this.breakpoint.isMatched(SIDEBAR_BREAKPOINT);
+    this.isDesktop.set(initialDesktop);
+    if (!initialDesktop) {
+      this.sidebarOpen = false;
+    }
+
+    // On mobile, close sidebar after navigation (e.g. after tapping a nav link)
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        if (!this.isDesktop()) {
+          this.sidebarOpen = false;
+        }
+      });
+
     if (this.auth.isLoggedIn() && !this.auth.currentUser()) {
       this.auth.loadCurrentUser().subscribe((user) => {
         if (user?.role === 'BARBER' || user?.role === 'MANAGER') {
