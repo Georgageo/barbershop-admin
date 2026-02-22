@@ -1,19 +1,44 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ServicesService } from '../../features/services/services.service';
 import { Service, CreateServiceDto, UpdateServiceDto } from '../../core/models/service.model';
+import { TableAction, TableColumn } from '../../components/table/table.models';
+import { TableComponent } from '../../components/table/table.component';
+import { DataTableCellDirective } from '../../components/table/table-cell.directive';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-services',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule, TableComponent, DataTableCellDirective],
   templateUrl: './services.component.html',
   styleUrl: './services.component.scss',
 })
-export class ServicesComponent implements OnInit {
+export class ServicesComponent implements OnInit, OnDestroy {
   private servicesService = inject(ServicesService);
+  private translate = inject(TranslateService);
+  private langSub?: Subscription;
 
+  columns: TableColumn[] = [];
+  actions: TableAction<Service>[] = [];
+
+  private updateTranslations(): void {
+    const t = (key: string) => this.translate.instant(key);
+    this.columns = [
+      { field: 'name',     header: t('services.serviceLabel'), sortable: true },
+      { field: 'duration', header: t('common.duration') },
+      { field: 'price',    header: t('common.price'), sortable: true },
+      { field: 'status',   header: t('common.status') },
+    ];
+    this.actions = [
+      { icon: 'pi pi-pencil',  tooltip: t('common.edit'), onClick: (s) => this.openEditModal(s) },
+      { icon: 'pi pi-power-off', tooltip: t('common.toggleActive'), severity: 'warn', onClick: (s) => this.toggleActive(s) },
+      { icon: 'pi pi-trash',   tooltip: t('common.delete'), severity: 'danger', onClick: (s) => this.confirmDelete(s) },
+    ];
+  }
+  
   list = signal<Service[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
@@ -39,7 +64,13 @@ export class ServicesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.updateTranslations();
+    this.langSub = this.translate.onLangChange.subscribe(() => this.updateTranslations());
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
   }
 
   load(): void {
@@ -47,11 +78,12 @@ export class ServicesComponent implements OnInit {
     this.error.set(null);
     this.servicesService.getList().subscribe({
       next: (data) => {
+        console.log('Services: ', data)
         this.list.set(data);
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err.error?.message ?? 'Σφάλμα φόρτωσης υπηρεσιών');
+        this.error.set(err.error?.message ?? this.translate.instant('services.errorLoad'));
         this.loading.set(false);
       },
     });
@@ -89,7 +121,7 @@ export class ServicesComponent implements OnInit {
 
   save(): void {
     if (!this.form.name.trim() || this.form.durationMinutes < 1 || this.form.priceCents < 0) {
-      this.error.set('Συμπληρώστε όλα τα υποχρεωτικά πεδία.');
+      this.error.set(this.translate.instant('services.fillRequired'));
       return;
     }
 
@@ -115,7 +147,7 @@ export class ServicesComponent implements OnInit {
         this.saving.set(false);
       },
       error: (err) => {
-        this.error.set(err.error?.message ?? 'Σφάλμα αποθήκευσης');
+        this.error.set(err.error?.message ?? this.translate.instant('services.errorSave'));
         this.saving.set(false);
       },
     });
@@ -127,13 +159,13 @@ export class ServicesComponent implements OnInit {
         this.load();
       },
       error: () => {
-        this.error.set('Σφάλμα ενημέρωσης');
+        this.error.set(this.translate.instant('services.errorUpdate'));
       },
     });
   }
 
   confirmDelete(service: Service): void {
-    if (confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε την υπηρεσία "${service.name}";`)) {
+    if (confirm(this.translate.instant('services.confirmDelete', { name: service.name }))) {
       this.deletingId.set(service.id);
       this.servicesService.delete(service.id).subscribe({
         next: () => {
@@ -141,7 +173,7 @@ export class ServicesComponent implements OnInit {
           this.deletingId.set(null);
         },
         error: () => {
-          this.error.set('Σφάλμα διαγραφής');
+          this.error.set(this.translate.instant('services.errorDelete'));
           this.deletingId.set(null);
         },
       });

@@ -1,13 +1,15 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
+import { LANG_STORAGE_KEY } from '../../app.component';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslateModule],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss',
 })
@@ -15,8 +17,18 @@ export class AdminLayoutComponent implements OnInit {
   private router = inject(Router);
   sidebarOpen = true;
   userMenuOpen = signal(false);
+  langDropdownOpen = signal(false);
 
-  constructor(public auth: AuthService, public theme: ThemeService) {}
+  constructor(
+    public auth: AuthService,
+    public theme: ThemeService,
+    public translate: TranslateService,
+  ) {}
+
+  setLanguage(lang: 'el' | 'en'): void {
+    this.translate.use(lang);
+    localStorage.setItem(LANG_STORAGE_KEY, lang);
+  }
 
   get isAdmin(): boolean {
     return this.auth.currentUser()?.role === 'ADMIN';
@@ -77,5 +89,18 @@ export class AdminLayoutComponent implements OnInit {
 
   closeUserMenu(): void {
     this.userMenuOpen.set(false);
+  }
+
+  openLangDropdown(): void {
+    this.langDropdownOpen.update((v) => !v);
+  }
+
+  closeLangDropdown(): void {
+    this.langDropdownOpen.set(false);
+  }
+
+  selectLanguage(lang: 'el' | 'en'): void {
+    this.setLanguage(lang);
+    this.closeLangDropdown();
   }
 }

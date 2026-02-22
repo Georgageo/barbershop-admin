@@ -1,8 +1,8 @@
 <div class="space-y-6">
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Ομάδα</h2>
-      <p class="text-slate-600 dark:text-slate-400 mt-1">Κουρείς και υπεύθυνοι μαγαζιών</p>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ 'staff.title' | translate }}</h2>
+      <p class="text-slate-600 dark:text-slate-400 mt-1">{{ 'staff.subtitle' | translate }}</p>
     </div>
     <div class="flex items-center gap-2">
       <div class="flex rounded-xl border border-slate-200 dark:border-slate-600 overflow-hidden">
@@ -14,7 +14,7 @@
             ? 'bg-cyan-500 text-white'
             : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'"
         >
-          Όλοι
+          {{ 'staff.all' | translate }}
         </button>
         <button
           type="button"
@@ -24,7 +24,7 @@
             ? 'bg-cyan-500 text-white'
             : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'"
         >
-          Κουρείς
+          {{ 'staff.barbers' | translate }}
         </button>
         <button
           type="button"
@@ -34,7 +34,7 @@
             ? 'bg-cyan-500 text-white'
             : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'"
         >
-          Υπεύθυνοι
+          {{ 'staff.managers' | translate }}
         </button>
       </div>
       <button
@@ -42,13 +42,13 @@
         (click)="openCreateBarberModal()"
         class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
       >
-        + Προσθήκη κουρέα
+        + {{ 'staff.addBarber' | translate }}
       </button>
       <a
         routerLink="/admin/employee-hours"
         class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium transition"
       >
-        Ωράρια εργαζομένων →
+        {{ 'staff.employeeHoursLink' | translate }}
       </a>
     </div>
   </div>

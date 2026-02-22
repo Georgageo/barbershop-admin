@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { UsersService, StaffMember } from '../../features/users/users.service';
 import { UserEligibleForBarber } from '../../core/models/barber.model';
 import { BarbersService } from '../../features/barbers/barbers.service';
@@ -16,7 +17,7 @@ export type StaffFilter = 'all' | 'barbers' | 'managers';
 @Component({
   selector: 'app-staff',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './staff.component.html',
   styleUrl: './staff.component.scss',
 })

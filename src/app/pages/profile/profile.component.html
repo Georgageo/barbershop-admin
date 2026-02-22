@@ -1,7 +1,7 @@
 <div class="space-y-8 max-w-2xl">
   <div>
-    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Το προφίλ μου</h2>
-    <p class="text-slate-600 dark:text-slate-400 mt-1">Δείτε και επεξεργαστείτε τα στοιχεία και τον κωδικό σας</p>
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ 'profile.title' | translate }}</h2>
+    <p class="text-slate-600 dark:text-slate-400 mt-1">{{ 'profile.subtitle' | translate }}</p>
   </div>
 
   @if (error()) {
@@ -12,19 +12,19 @@
 
   @if (loading()) {
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
-      Φόρτωση προφίλ...
+      {{ 'profile.loadingProfile' | translate }}
     </div>
   } @else if (profile()) {
     <!-- Profile photo -->
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
       <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-        <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Φωτογραφία προφίλ</h3>
-        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Ανεβάστε μια φωτογραφία (JPG, PNG ή WebP)</p>
+        <h3 class="text-lg font-semibold text-slate-800 dark:text-white">{{ 'profile.profilePhoto' | translate }}</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">{{ 'profile.profilePhotoHint' | translate }}</p>
       </div>
       <div class="p-6 flex flex-wrap items-end gap-6">
         <div class="flex items-center gap-4">
           @if (profileImageUrl()) {
-            <img [src]="profileImageUrl()" alt="Προφίλ" class="w-24 h-24 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600" />
+            <img [src]="profileImageUrl()" [alt]="'profile.profileAlt' | translate" class="w-24 h-24 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600" />
           } @else {
             <div class="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-2xl font-semibold text-slate-600 dark:text-slate-300">
               {{ auth.getInitials() }}
@@ -45,7 +45,7 @@
                 (click)="uploadPhoto()"
                 class="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-white text-sm font-medium transition disabled:opacity-60"
               >
-                {{ savingPhoto() ? 'Ανέβασμα...' : 'Ανέβασμα φωτογραφίας' }}
+                {{ savingPhoto() ? ('profile.uploading' | translate) : ('profile.uploadPhoto' | translate) }}
               </button>
             }
           </div>
@@ -56,7 +56,7 @@
     <!-- Profile data -->
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
       <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-        <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Στοιχεία λογαριασμού</h3>
+        <h3 class="text-lg font-semibold text-slate-800 dark:text-white">{{ 'profile.accountDetails' | translate }}</h3>
       </div>
       <form (ngSubmit)="saveProfile()" class="p-6 space-y-5">
         <div>
@@ -68,7 +68,7 @@
             disabled
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
           />
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Το email δεν μπορεί να αλλάξει.</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ 'profile.emailCannotChange' | translate }}</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>

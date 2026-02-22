@@ -1,8 +1,8 @@
 <div class="space-y-6">
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ isBarber ? 'Πρόγραμμα μου' : 'Κρατήσεις' }}</h2>
-      <p class="text-slate-600 dark:text-slate-400 mt-1">{{ isBarber ? 'Τα ραντεβού σας' : 'Διαχείριση ραντεβού' }}</p>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ (isBarber ? 'bookings.mySchedule' : 'bookings.bookings') | translate }}</h2>
+      <p class="text-slate-600 dark:text-slate-400 mt-1">{{ (isBarber ? 'bookings.myAppointments' : 'bookings.manageBookings') | translate }}</p>
     </div>
     <div class="flex items-center gap-2">
       @if (isAdminOrManager) {
@@ -11,7 +11,7 @@
           (click)="openNewBookingModal()"
           class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
         >
-          Νέα κράτηση (τηλεφωνικά)
+          {{ 'bookings.newBooking' | translate }}
         </button>
       }
       <button
@@ -20,7 +20,7 @@
         [disabled]="loading()"
         class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-medium disabled:opacity-60 transition"
       >
-        Ανανέωση
+        {{ 'common.refresh' | translate }}
       </button>
     </div>
   </div>
@@ -33,35 +33,35 @@
 
   @if (loading()) {
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
-      Φόρτωση κρατήσεων...
+      {{ 'bookings.loadingBookings' | translate }}
     </div>
   } @else {
     @if (!isBarber) {
       <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-4 mb-4 flex flex-wrap items-center gap-4">
-        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Φίλτρο:</span>
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ 'bookings.filter' | translate }}</span>
         <div class="flex items-center gap-2">
-          <label for="filterShop" class="text-sm text-slate-600 dark:text-slate-400">Μαγαζί</label>
+          <label for="filterShop" class="text-sm text-slate-600 dark:text-slate-400">{{ 'bookings.shop' | translate }}</label>
           <select
             id="filterShop"
             [value]="filterShopId()"
             (change)="filterShopId.set($any($event.target).value)"
             class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           >
-            <option value="">Όλα τα μαγαζιά</option>
+            <option value="">{{ 'bookings.allShops' | translate }}</option>
             @for (s of shops(); track s.id) {
               <option [value]="s.id">{{ s.name }}</option>
             }
           </select>
         </div>
         <div class="flex items-center gap-2">
-          <label for="filterStatus" class="text-sm text-slate-600 dark:text-slate-400">Κατάσταση</label>
+          <label for="filterStatus" class="text-sm text-slate-600 dark:text-slate-400">{{ 'common.status' | translate }}</label>
           <select
             id="filterStatus"
             [value]="filterStatus()"
             (change)="filterStatus.set($any($event.target).value)"
             class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           >
-            <option value="">Όλες</option>
+            <option value="">{{ 'bookings.allStatuses' | translate }}</option>
             @for (opt of statusOptions; track opt.value) {
               <option [value]="opt.value">{{ opt.label }}</option>
             }
@@ -73,7 +73,7 @@
             (click)="filterShopId.set(''); filterStatus.set('')"
             class="text-sm text-cyan-600 dark:text-cyan-400 hover:underline"
           >
-            Καθαρισμός φίλτρου
+            {{ 'bookings.clearFilter' | translate }}
           </button>
         }
       </div>
@@ -83,15 +83,15 @@
         <table class="w-full min-w-[800px]">
           <thead class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Ημερομηνία / Ώρα</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Πελάτης</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.dateTime' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.customer' | translate }}</th>
               @if (!isBarber) {
-                <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Μαγαζί</th>
-                <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Κουρέας</th>
+                <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.shop' | translate }}</th>
+                <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.barber' | translate }}</th>
               }
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Υπηρεσία</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Κατάσταση</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Ενέργειες</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'bookings.service' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.status' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.actions' | translate }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -139,14 +139,14 @@
                     }
                   </select>
                   @if (updatingId() === a.id) {
-                    <span class="ml-2 text-xs text-slate-500">αποθήκευση...</span>
+                    <span class="ml-2 text-xs text-slate-500">{{ 'bookings.savingStatus' | translate }}</span>
                   }
                 </td>
               </tr>
             } @empty {
               <tr>
                 <td [attr.colspan]="isBarber ? 5 : 7" class="py-12 px-4 text-center text-slate-500">
-                  {{ isBarber ? 'Δεν έχετε ραντεβού.' : (filterShopId() || filterStatus() ? 'Δεν βρέθηκαν κρατήσεις με τα επιλεγμένα φίλτρα.' : 'Δεν υπάρχουν κρατήσεις.') }}
+                  {{ isBarber ? ('bookings.noAppointmentsBarber' | translate) : (filterShopId() || filterStatus() ? ('bookings.noBookingsFilter' | translate) : ('bookings.noBookings' | translate)) }}
                 </td>
               </tr>
             }
@@ -166,7 +166,7 @@
         (click)="$event.stopPropagation()"
       >
         <div class="p-6 border-b border-slate-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 z-10">
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white">Νέα κράτηση (τηλεφωνικά)</h3>
+          <h3 class="text-xl font-bold text-slate-800 dark:text-white">{{ 'bookings.newBookingTitle' | translate }}</h3>
         </div>
         <div class="p-6 space-y-5">
           @if (newBookingSuccess()) {
@@ -181,23 +181,23 @@
             }
 
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Πελάτης *</label>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{{ 'bookings.customer' | translate }} *</label>
               <input
                 type="text"
                 [ngModel]="customerSearch()"
                 (ngModelChange)="customerSearch.set($event); onCustomerSearchInput()"
-                placeholder="Αναζήτηση πελάτη..."
+                [placeholder]="'bookings.customerSearch' | translate"
                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-2"
               />
               @if (customersLoading()) {
-                <p class="text-sm text-slate-500">Φόρτωση...</p>
+                <p class="text-sm text-slate-500">{{ 'common.loading' | translate }}</p>
               } @else {
                 <select
                   [ngModel]="selectedCustomerId()"
                   (ngModelChange)="selectedCustomerId.set($event)"
                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 >
-                  <option value="">— Επιλέξτε πελάτη —</option>
+                  <option value="">— {{ 'bookings.selectCustomer' | translate }} —</option>
                   @for (c of customers(); track c.id) {
                     <option [value]="c.id">{{ customerDisplayName(c) }} {{ c.phone ? '· ' + c.phone : '' }}</option>
                   }
@@ -209,32 +209,36 @@
                   (click)="toggleAddCustomerForm()"
                   class="mt-2 text-sm text-cyan-600 dark:text-cyan-400 hover:underline"
                 >
-                  {{ showAddCustomerForm() ? 'Ακύρωση' : '+ Νέος πελάτης' }}
+                  @if (showAddCustomerForm()) {
+                    {{ 'common.cancel' | translate }}
+                  } @else {
+                    + {{ 'bookings.newCustomer' | translate }}
+                  }
                 </button>
                 @if (showAddCustomerForm()) {
                   <div class="mt-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 space-y-3">
                     <input
                       type="text"
                       [(ngModel)]="newCustomerForm.firstName"
-                      placeholder="Όνομα"
+                      [placeholder]="'customers.firstName' | translate"
                       class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm"
                     />
                     <input
                       type="text"
                       [(ngModel)]="newCustomerForm.lastName"
-                      placeholder="Επώνυμο"
+                      [placeholder]="'customers.lastName' | translate"
                       class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm"
                     />
                     <input
                       type="text"
                       [(ngModel)]="newCustomerForm.phone"
-                      placeholder="Τηλέφωνο *"
+                      [placeholder]="'common.phone' | translate"
                       class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm"
                     />
                     <input
                       type="email"
                       [(ngModel)]="newCustomerForm.email"
-                      placeholder="Email (προαιρετικό)"
+                      [placeholder]="'customers.emailOptional' | translate"
                       class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm"
                     />
                     <button
@@ -243,7 +247,7 @@
                       [disabled]="creatingCustomer()"
                       class="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-white text-sm font-medium disabled:opacity-60"
                     >
-                      {{ creatingCustomer() ? 'Δημιουργία...' : 'Δημιουργία και επιλογή' }}
+                      {{ creatingCustomer() ? ('bookings.creating' | translate) : ('bookings.createAndSelect' | translate) }}
                     </button>
                   </div>
                 }
@@ -252,26 +256,26 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Κατάστημα *</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{{ 'bookings.shopRequired' | translate }}</label>
                 <select
                   [ngModel]="selectedShopId()"
                   (ngModelChange)="selectedShopId.set($event); onNewBookingBarberOrShopChange()"
                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 >
-                  <option value="">— Επιλέξτε —</option>
+                  <option value="">— {{ 'bookings.selectOption' | translate }} —</option>
                   @for (s of shops(); track s.id) {
                     <option [value]="s.id">{{ s.name }}</option>
                   }
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Κουρέας *</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{{ 'bookings.barberRequired' | translate }}</label>
                 <select
                   [ngModel]="selectedBarberId()"
                   (ngModelChange)="selectedBarberId.set($event); onNewBookingBarberOrShopChange()"
                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 >
-                  <option value="">— Επιλέξτε —</option>
+                  <option value="">— {{ 'bookings.selectOption' | translate }} —</option>
                   @for (b of barbers(); track b.id) {
                     <option [value]="b.id">{{ b.user.firstName }} {{ b.user.lastName }}</option>
                   }
@@ -280,25 +284,25 @@
             </div>
 
             @if (availabilityLoading()) {
-              <p class="text-sm text-slate-500">Φόρτωση διαθεσιμότητας...</p>
+              <p class="text-sm text-slate-500">{{ 'bookings.loadingAvailability' | translate }}</p>
             }
             @if (availability() && barberServicesForSelection().length > 0) {
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Υπηρεσία *</label>
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{{ 'bookings.serviceRequired' | translate }}</label>
                   <select
                     [ngModel]="selectedServiceId()"
                     (ngModelChange)="selectedServiceId.set($event); onNewBookingServiceChange()"
                     class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   >
-                    <option value="">— Επιλέξτε —</option>
+                    <option value="">— {{ 'bookings.selectOption' | translate }} —</option>
                     @for (svc of barberServicesForSelection(); track svc.id) {
                       <option [value]="svc.id">{{ svc.name }} ({{ svc.durationMinutes }} λ.)</option>
                     }
                   </select>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Ημερομηνία *</label>
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{{ 'bookings.dateRequired' | translate }}</label>
                   <select
                     [ngModel]="selectedDay()"
                     (ngModelChange)="selectedDay.set($event); onNewBookingDayChange()"
@@ -310,13 +314,13 @@
                   </select>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Ώρα *</label>
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{{ 'bookings.timeRequired' | translate }}</label>
                   <select
                     [ngModel]="selectedTime()"
                     (ngModelChange)="selectedTime.set($event)"
                     class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   >
-                    <option value="">— Επιλέξτε —</option>
+                    <option value="">— {{ 'bookings.selectOption' | translate }} —</option>
                     @for (t of getAvailableTimeSlots(); track t) {
                       <option [value]="t">{{ t }}</option>
                     }
@@ -324,12 +328,12 @@
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Σημειώσεις</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{{ 'bookings.notes' | translate }}</label>
                 <input
                   type="text"
                   [ngModel]="newBookingNotes()"
                   (ngModelChange)="newBookingNotes.set($event)"
-                  placeholder="Προαιρετικό"
+                  [placeholder]="'common.optional' | translate"
                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
@@ -342,7 +346,7 @@
                 [disabled]="newBookingSaving()"
                 class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium transition disabled:opacity-60"
               >
-                Ακύρωση
+                {{ 'common.cancel' | translate }}
               </button>
               <button
                 type="button"
@@ -350,7 +354,7 @@
                 [disabled]="newBookingSaving()"
                 class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
               >
-                {{ newBookingSaving() ? 'Κράτηση...' : 'Ολοκλήρωση κράτησης' }}
+                {{ newBookingSaving() ? ('bookings.completingBooking' | translate) : ('bookings.completeBooking' | translate) }}
               </button>
             </div>
           }

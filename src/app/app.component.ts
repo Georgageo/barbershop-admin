@@ -1,17 +1,24 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ThemeService } from './core/theme/theme.service';
+import { TranslateService } from '@ngx-translate/core';
+
+const LANG_STORAGE_KEY = 'admin-lang';
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  template: `
+    <router-outlet />
+  `,
 })
-export class AppComponent {
-  title = 'admin';
+export class AppComponent implements OnInit {
+  private translate = inject(TranslateService);
 
-  constructor() {
-    inject(ThemeService); // Initialize theme on app bootstrap
+  ngOnInit(): void {
+    const saved = localStorage.getItem(LANG_STORAGE_KEY);
+    const lang = saved === 'en' || saved === 'el' ? saved : 'el';
+    this.translate.use(lang);
   }
 }
+
+export { LANG_STORAGE_KEY };

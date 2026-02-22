@@ -3,8 +3,8 @@
     type="button"
     (click)="theme.toggleTheme()"
     class="absolute top-4 right-4 p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition"
-    [attr.aria-label]="theme.theme() === 'dark' ? 'Φωτεινό θέμα' : 'Σκοτεινό θέμα'"
-    [title]="theme.theme() === 'dark' ? 'Φωτεινό θέμα' : 'Σκοτεινό θέμα'"
+    [attr.aria-label]="(theme.theme() === 'dark' ? 'nav.lightTheme' : 'nav.darkTheme') | translate"
+    [title]="(theme.theme() === 'dark' ? 'nav.lightTheme' : 'nav.darkTheme') | translate"
   >
     @if (theme.theme() === 'dark') {
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
@@ -14,16 +14,16 @@
   </button>
   <div class="w-full max-w-md">
     <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">Barbershop</h1>
-      <p class="text-slate-500 dark:text-slate-400 mt-1">Admin Panel</p>
+      <h1 class="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">{{ 'login.title' | translate }}</h1>
+      <p class="text-slate-500 dark:text-slate-400 mt-1">{{ 'login.subtitle' | translate }}</p>
     </div>
 
     <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/20 p-8 backdrop-blur-sm">
-      <h2 class="text-xl font-semibold text-slate-800 dark:text-white mb-6">Σύνδεση</h2>
+      <h2 class="text-xl font-semibold text-slate-800 dark:text-white mb-6">{{ 'login.signIn' | translate }}</h2>
 
       <form (ngSubmit)="onSubmit()" class="space-y-5">
         <div>
-          <label for="email" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Email</label>
+          <label for="email" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">{{ 'common.email' | translate }}</label>
           <input
             id="email"
             type="email"
@@ -35,7 +35,7 @@
           />
         </div>
         <div>
-          <label for="password" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Κωδικός</label>
+          <label for="password" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">{{ 'login.password' | translate }}</label>
           <input
             id="password"
             type="password"
@@ -54,13 +54,13 @@
           [disabled]="loading"
           class="w-full py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed text-white dark:text-slate-950 font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-100 dark:focus:ring-offset-slate-900"
         >
-          {{ loading ? 'Σύνδεση...' : 'Σύνδεση' }}
+          {{ loading ? ('login.signingIn' | translate) : ('login.signIn' | translate) }}
         </button>
       </form>
     </div>
 
     <p class="text-center text-slate-500 dark:text-slate-400 text-sm mt-6">
-      Διαχείριση κρατήσεων και πελατών
+      {{ 'login.tagline' | translate }}
     </p>
   </div>
 </div>

@@ -1,5 +1,5 @@
 @use 'tailwindcss';
-
+@import 'primeicons/primeicons.css';
 /* Tailwind v4: dark mode με class στο <html> */
 @custom-variant dark (&:where(.dark, .dark *));
 

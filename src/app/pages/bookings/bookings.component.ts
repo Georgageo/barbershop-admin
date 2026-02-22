@@ -1,6 +1,8 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 import { AppointmentsService, AvailabilityResponse, CreateAppointmentByAdminDto } from '../../features/appointments/appointments.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Appointment, AppointmentStatus } from '../../core/models/appointment.model';
@@ -12,31 +14,25 @@ import { Shop } from '../../features/shops/shops.service';
 import { Barber } from '../../core/models/barber.model';
 import { Service } from '../../core/models/service.model';
 
-const STATUS_LABELS: Record<AppointmentStatus, string> = {
-  PENDING: 'Εκκρεμεί',
-  CONFIRMED: 'Επιβεβαιωμένο',
-  IN_PROGRESS: 'Σε εξέλιξη',
-  COMPLETED: 'Ολοκληρωμένο',
-  CANCELLED: 'Ακυρωμένο',
-  NO_SHOW: 'Απόντα',
-};
-
-const DAY_NAMES = ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'];
+const DAY_NAMES_EL = ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'];
+const DAY_NAMES_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './bookings.component.html',
   styleUrl: './bookings.component.scss',
 })
-export class BookingsComponent implements OnInit {
+export class BookingsComponent implements OnInit, OnDestroy {
   private appointmentsService = inject(AppointmentsService);
   private auth = inject(AuthService);
   private customersService = inject(CustomersService);
   private shopsService = inject(ShopsService);
   private barbersService = inject(BarbersService);
   private servicesService = inject(ServicesService);
+  private translate = inject(TranslateService);
+  private langSub?: Subscription;
 
   list = signal<Appointment[]>([]);
   loading = signal(true);
@@ -57,16 +53,28 @@ export class BookingsComponent implements OnInit {
     });
   });
 
-  readonly statusOptions: { value: AppointmentStatus; label: string }[] = [
-    { value: 'PENDING', label: STATUS_LABELS.PENDING },
-    { value: 'CONFIRMED', label: STATUS_LABELS.CONFIRMED },
-    { value: 'IN_PROGRESS', label: STATUS_LABELS.IN_PROGRESS },
-    { value: 'COMPLETED', label: STATUS_LABELS.COMPLETED },
-    { value: 'CANCELLED', label: STATUS_LABELS.CANCELLED },
-    { value: 'NO_SHOW', label: STATUS_LABELS.NO_SHOW },
-  ];
+  statusOptions: { value: AppointmentStatus; label: string }[] = [];
+  private readonly statusKeys: Record<AppointmentStatus, string> = {
+    PENDING: 'bookings.statusPending',
+    CONFIRMED: 'bookings.statusConfirmed',
+    IN_PROGRESS: 'bookings.statusInProgress',
+    COMPLETED: 'bookings.statusCompleted',
+    CANCELLED: 'bookings.statusCancelled',
+    NO_SHOW: 'bookings.statusNoShow',
+  };
+  statusLabel = (status: AppointmentStatus) => this.translate.instant(this.statusKeys[status]) || status;
 
-  readonly statusLabel = (status: AppointmentStatus) => STATUS_LABELS[status] ?? status;
+  private updateStatusOptions(): void {
+    const t = (key: string) => this.translate.instant(key);
+    this.statusOptions = [
+      { value: 'PENDING', label: t('bookings.statusPending') },
+      { value: 'CONFIRMED', label: t('bookings.statusConfirmed') },
+      { value: 'IN_PROGRESS', label: t('bookings.statusInProgress') },
+      { value: 'COMPLETED', label: t('bookings.statusCompleted') },
+      { value: 'CANCELLED', label: t('bookings.statusCancelled') },
+      { value: 'NO_SHOW', label: t('bookings.statusNoShow') },
+    ];
+  }
 
   get isBarber(): boolean {
     return this.auth.currentUser()?.role === 'BARBER';
@@ -113,6 +121,11 @@ export class BookingsComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.updateStatusOptions();
+    this.langSub = this.translate.onLangChange.subscribe(() => {
+      this.updateStatusOptions();
+      this.initAvailableDays();
+    });
     this.load();
     this.initAvailableDays();
     if (this.isAdminOrManager) {
@@ -120,6 +133,10 @@ export class BookingsComponent implements OnInit {
       const shopsRequest = isManager ? this.shopsService.getMyShops() : this.shopsService.getList();
       shopsRequest.subscribe({ next: (list) => this.shops.set(list), error: () => {} });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
   }
 
   private toLocalDateString(d: Date): string {
@@ -130,13 +147,14 @@ export class BookingsComponent implements OnInit {
   }
 
   private initAvailableDays(): void {
+    const dayNames = this.translate.currentLang === 'el' ? DAY_NAMES_EL : DAY_NAMES_EN;
     const today = new Date();
     this.availableDays = [];
     for (let i = 0; i < 14; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
       this.availableDays.push({
-        label: `${DAY_NAMES[d.getDay()]}, ${d.getDate()}/${d.getMonth() + 1}`,
+        label: `${dayNames[d.getDay()]}, ${d.getDate()}/${d.getMonth() + 1}`,
         value: this.toLocalDateString(d),
       });
     }
@@ -151,7 +169,7 @@ export class BookingsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err.error?.message ?? 'Σφάλμα φόρτωσης κρατήσεων');
+        this.error.set(err.error?.message ?? this.translate.instant('bookings.errorLoad'));
         this.loading.set(false);
       },
     });
@@ -216,7 +234,7 @@ export class BookingsComponent implements OnInit {
 
   createCustomerAndSelect(): void {
     if (!this.newCustomerForm.firstName?.trim() || !this.newCustomerForm.lastName?.trim() || !this.newCustomerForm.phone?.trim()) {
-      this.newBookingError.set('Συμπληρώστε όνομα, επώνυμο και τηλέφωνο.');
+      this.newBookingError.set(this.translate.instant('customers.fillRequired'));
       return;
     }
     this.creatingCustomer.set(true);

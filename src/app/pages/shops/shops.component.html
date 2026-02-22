@@ -1,8 +1,8 @@
 <div class="space-y-6">
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Μαγαζιά</h2>
-      <p class="text-slate-600 dark:text-slate-400 mt-1">Διαχείριση σημείων και ωραρίων λειτουργίας</p>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ 'shops.title' | translate }}</h2>
+      <p class="text-slate-600 dark:text-slate-400 mt-1">{{ 'shops.subtitle' | translate }}</p>
     </div>
     @if (canManageShops) {
       <button
@@ -10,7 +10,7 @@
         (click)="openCreateModal()"
         class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
       >
-        + Νέο μαγαζί
+        + {{ 'shops.newShop' | translate }}
       </button>
     }
   </div>
@@ -23,7 +23,7 @@
 
   @if (loading()) {
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
-      Φόρτωση μαγαζιών...
+      {{ 'shops.loadingShops' | translate }}
     </div>
   } @else {
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
@@ -31,10 +31,10 @@
         <table class="w-full min-w-[600px]">
           <thead class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Όνομα</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Τηλέφωνο</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Διεύθυνση</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Ενέργειες</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.name' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.phone' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.address' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.actions' | translate }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -55,7 +55,7 @@
                       [routerLink]="['/admin/shops', shop.id, 'hours']"
                       class="px-3 py-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-sm font-medium transition"
                     >
-                      🕐 Ωράρια
+                      🕐 {{ 'shops.openingHours' | translate }}
                     </a>
                     @if (canManageShops) {
                       <button

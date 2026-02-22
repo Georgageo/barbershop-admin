@@ -1,15 +1,15 @@
 <div class="space-y-6">
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Προσκλήσεις</h2>
-      <p class="text-slate-600 dark:text-slate-400 mt-1">Προσκαλέστε χρήστες Admin ή Κουρέα· θα λάβουν email με link για να ορίσουν κωδικό</p>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ 'invitations.title' | translate }}</h2>
+      <p class="text-slate-600 dark:text-slate-400 mt-1">{{ 'invitations.subtitle' | translate }}</p>
     </div>
     <button
       type="button"
       (click)="openModal()"
       class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
     >
-      + Προσκάλεσε χρήστη
+      + {{ 'invitations.inviteUser' | translate }}
     </button>
   </div>
 
@@ -21,7 +21,7 @@
 
   @if (loading()) {
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-12 text-center text-slate-500 dark:text-slate-400">
-      Φόρτωση προσκλήσεων...
+      {{ 'invitations.loadingInvitations' | translate }}
     </div>
   } @else {
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 shadow-sm overflow-hidden">
@@ -29,11 +29,11 @@
         <table class="w-full min-w-[600px]">
           <thead class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Email</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Ρόλος</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Όνομα</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Λήξη</th>
-              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Στάλθηκε</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.email' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'invitations.role' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'common.name' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'invitations.expires' | translate }}</th>
+              <th class="text-left py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">{{ 'invitations.sent' | translate }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -54,7 +54,7 @@
             } @empty {
               <tr>
                 <td colspan="5" class="py-12 px-4 text-center text-slate-500 dark:text-slate-400">
-                  Δεν υπάρχουν εκκρεμείς προσκλήσεις. Κάντε κλικ στο «Προσκάλεσε χρήστη» για να στείλετε πρόσκληση.
+                  {{ 'invitations.noInvitations' | translate }}
                 </td>
               </tr>
             }
@@ -75,8 +75,8 @@
         (click)="$event.stopPropagation()"
       >
         <div class="p-6 border-b border-slate-200">
-          <h3 class="text-xl font-bold text-slate-800">Προσκάλεσε χρήστη</h3>
-          <p class="text-sm text-slate-600 mt-1">Θα λάβει email με σύνδεσμο για να ορίσει τον κωδικό του (ισχύει 7 ημέρες).</p>
+          <h3 class="text-xl font-bold text-slate-800">{{ 'invitations.inviteUserModalTitle' | translate }}</h3>
+          <p class="text-sm text-slate-600 mt-1">{{ 'invitations.inviteUserModalHint' | translate }}</p>
         </div>
 
         <form (ngSubmit)="save()" class="p-6 space-y-5">
@@ -88,7 +88,7 @@
 
           <div>
             <label for="inv-email" class="block text-sm font-medium text-slate-700 mb-2">
-              Email <span class="text-red-500">*</span>
+              {{ 'common.email' | translate }} <span class="text-red-500">*</span>
             </label>
             <input
               id="inv-email"
@@ -102,7 +102,7 @@
           </div>
 
           <div>
-            <label for="inv-role" class="block text-sm font-medium text-slate-700 mb-2">Ρόλος</label>
+            <label for="inv-role" class="block text-sm font-medium text-slate-700 mb-2">{{ 'invitations.role' | translate }}</label>
             <select
               id="inv-role"
               [(ngModel)]="form.role"
@@ -117,7 +117,7 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label for="inv-firstName" class="block text-sm font-medium text-slate-700 mb-2">Όνομα</label>
+              <label for="inv-firstName" class="block text-sm font-medium text-slate-700 mb-2">{{ 'common.name' | translate }}</label>
               <input
                 id="inv-firstName"
                 type="text"
@@ -125,11 +125,11 @@
                 name="firstName"
                 maxlength="100"
                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
-                placeholder="Προαιρετικό"
+                [placeholder]="'invitations.optionalPlaceholder' | translate"
               />
             </div>
             <div>
-              <label for="inv-lastName" class="block text-sm font-medium text-slate-700 mb-2">Επώνυμο</label>
+              <label for="inv-lastName" class="block text-sm font-medium text-slate-700 mb-2">{{ 'customers.lastName' | translate }}</label>
               <input
                 id="inv-lastName"
                 type="text"
@@ -137,7 +137,7 @@
                 name="lastName"
                 maxlength="100"
                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
-                placeholder="Προαιρετικό"
+                [placeholder]="'invitations.optionalPlaceholder' | translate"
               />
             </div>
           </div>
@@ -149,14 +149,14 @@
               [disabled]="saving()"
               class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition disabled:opacity-60"
             >
-              Ακύρωση
+              {{ 'common.cancel' | translate }}
             </button>
             <button
               type="submit"
               [disabled]="saving()"
               class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
             >
-              {{ saving() ? 'Αποστολή...' : 'Αποστολή πρόσκλησης' }}
+              {{ saving() ? ('invitations.sendingInvitation' | translate) : ('invitations.sendInvitation' | translate) }}
             </button>
           </div>
         </form>
