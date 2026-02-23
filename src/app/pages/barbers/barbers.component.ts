@@ -24,15 +24,19 @@ import { ModalComponent } from '../../components/modal/modal.component';
 import { ModalActionsDirective } from '../../components/modal/modal-actions.directive';
 import { ModalBodyDirective } from '../../components/modal/modal-body.directive';
 import { ModalFieldConfig } from '../../components/modal/modal.models';
+import {
+  ScheduleCalendarDay,
+  ScheduleCalendarTableComponent,
+} from '../../components/schedule-calendar-table/schedule-calendar-table.component';
 
 const WEEKDAY_NAMES = ['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'];
 
-export interface CalendarDay {
-  date: Date | null;
-  dayOfMonth: number | null;
-  isCurrentMonth: boolean;
-  isoDate: string;
-  entries: ScheduleEntry[];
+/** Format date as YYYY-MM-DD in local timezone (for matching API workDate calendar dates). */
+function toLocalDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 @Component({
@@ -50,6 +54,7 @@ export interface CalendarDay {
     ModalComponent,
     ModalActionsDirective,
     ModalBodyDirective,
+    ScheduleCalendarTableComponent,
   ],
   templateUrl: './barbers.component.html',
   styleUrl: './barbers.component.scss',
@@ -193,27 +198,28 @@ export class BarbersComponent implements OnInit, OnDestroy {
     const startPad = first.getDay();
     const totalDays = last.getDate();
 
-    const weeks: CalendarDay[][] = [];
-    let week: CalendarDay[] = [];
+    const weeks: ScheduleCalendarDay[][] = [];
+    let week: ScheduleCalendarDay[] = [];
     for (let i = 0; i < startPad; i++) {
       const prevMonth = new Date(year, m, 1 - (startPad - i));
+      const key = toLocalDateKey(prevMonth);
       week.push({
         date: prevMonth,
         dayOfMonth: prevMonth.getDate(),
         isCurrentMonth: false,
-        isoDate: prevMonth.toISOString().slice(0, 10),
-        entries: entriesByDate.get(prevMonth.toISOString().slice(0, 10)) ?? [],
+        isoDate: key,
+        entries: entriesByDate.get(key) ?? [],
       });
     }
     for (let d = 1; d <= totalDays; d++) {
       const date = new Date(year, m, d);
-      const iso = date.toISOString().slice(0, 10);
+      const key = toLocalDateKey(date);
       week.push({
         date,
         dayOfMonth: d,
         isCurrentMonth: true,
-        isoDate: iso,
-        entries: entriesByDate.get(iso) ?? [],
+        isoDate: key,
+        entries: entriesByDate.get(key) ?? [],
       });
       if (week.length === 7) {
         weeks.push(week);
@@ -224,12 +230,13 @@ export class BarbersComponent implements OnInit, OnDestroy {
       let nextD = 1;
       while (week.length < 7) {
         const date = new Date(year, m + 1, nextD++);
+        const key = toLocalDateKey(date);
         week.push({
           date,
           dayOfMonth: date.getDate(),
           isCurrentMonth: false,
-          isoDate: date.toISOString().slice(0, 10),
-          entries: entriesByDate.get(date.toISOString().slice(0, 10)) ?? [],
+          isoDate: key,
+          entries: entriesByDate.get(key) ?? [],
         });
       }
       weeks.push(week);
@@ -456,5 +463,9 @@ export class BarbersComponent implements OnInit, OnDestroy {
   employeeNameForEntry(entry: ScheduleEntry): string {
     const u = entry.user;
     return [u.firstName, u.lastName].filter(Boolean).join(' ') || '—';
+  }
+
+  getEntrySubtitle(entry: ScheduleEntry): string {
+    return 'at ' + entry.shop.name;
   }
 }

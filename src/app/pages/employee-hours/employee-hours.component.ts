@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -11,6 +11,10 @@ import { ShopsService } from '../../features/shops/shops.service';
 import { ShopHoursService, OpeningHoursByDay } from '../../features/shop-hours/shop-hours.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Shop } from '../../features/shops/shops.service';
+import {
+  ScheduleCalendarDay,
+  ScheduleCalendarTableComponent,
+} from '../../components/schedule-calendar-table/schedule-calendar-table.component';
 
 function minutesToTime(m: number): string {
   const h = Math.floor(m / 60);
@@ -30,6 +34,7 @@ export interface CalendarDay {
   isCurrentMonth: boolean;
   isOpen: boolean; // shop has opening hours this day of week
   isToday: boolean;
+  hasEntries?: boolean; // at least one employee has schedule that day at selected shop
 }
 
 export interface DayDetailGap {
@@ -54,7 +59,7 @@ export interface DayTimeline {
 @Component({
   selector: 'app-employee-hours',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ScheduleCalendarTableComponent],
   templateUrl: './employee-hours.component.html',
   styleUrl: './employee-hours.component.scss',
 })
@@ -82,90 +87,87 @@ export class EmployeeHoursComponent implements OnInit {
   /** Selected day for detail panel: YYYY-MM-DD or null. */
   selectedDate = signal<string | null>(null);
 
+  /** Labels for week days, same σειρά όπως στο calendar των κουρέων. */
+  readonly weekDays: string[] = ['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'];
+
   formUserId = '';
   formShopId = '';
   formWorkDate = '';
   formOpenTime = '';
   formCloseTime = '';
 
-  /** Calendar grid: 6 rows x 7 cols (Mon–Sun). First day of week = Monday (1). */
-  calendarDays = computed(() => {
+  /** Calendar grid για το shared component, ίδιο στυλ με των κουρέων. */
+  calendarGrid = computed(() => {
     const year = this.calendarYear();
     const month = this.calendarMonth();
-    const hours = this.shopOpeningHours();
+    const entries = this.entries();
+
+    const entriesByDate = new Map<string, ScheduleEntry[]>();
+    const toDateStr = (v: string | Date) =>
+      typeof v === 'string' ? v.slice(0, 10) : new Date(v).toISOString().slice(0, 10);
+
+    for (const e of entries) {
+      const key = toDateStr(e.workDate);
+      if (!entriesByDate.has(key)) entriesByDate.set(key, []);
+      entriesByDate.get(key)!.push(e);
+    }
+
     const first = new Date(year, month, 1);
     const last = new Date(year, month + 1, 0);
-    const today = new Date();
-    const todayStr =
-      today.getFullYear() +
-      '-' +
-      String(today.getMonth() + 1).padStart(2, '0') +
-      '-' +
-      String(today.getDate()).padStart(2, '0');
+    const startPad = first.getDay(); // 0=Κυρ, 1=Δευ, ...
+    const totalDays = last.getDate();
 
-    // JS: getDay() 0=Sun, 1=Mon,... We want Monday=0 for display: (getDay() + 6) % 7
-    const firstWeekday = (first.getDay() + 6) % 7; // 0=Mon, 6=Sun
-    const daysInMonth = last.getDate();
-    const totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
-    const result: CalendarDay[] = [];
+    const weeks: ScheduleCalendarDay[][] = [];
+    let week: ScheduleCalendarDay[] = [];
 
-    // Leading empty cells
-    for (let i = 0; i < firstWeekday; i++) {
-      const prevMonthDay = new Date(year, month, -firstWeekday + i + 1);
-      const dateStr =
-        prevMonthDay.getFullYear() +
-        '-' +
-        String(prevMonthDay.getMonth() + 1).padStart(2, '0') +
-        '-' +
-        String(prevMonthDay.getDate()).padStart(2, '0');
-      const dayOfWeek = prevMonthDay.getDay();
-      const isOpen = hours ? (hours[String(dayOfWeek)]?.length ?? 0) > 0 : false;
-      result.push({
-        date: dateStr,
-        dayOfMonth: prevMonthDay.getDate(),
+    // Προηγούμενες μέρες (τέλος προηγούμενου μήνα)
+    for (let i = 0; i < startPad; i++) {
+      const prevMonth = new Date(year, month, 1 - (startPad - i));
+      const key = toDateStr(prevMonth);
+      week.push({
+        date: prevMonth,
+        dayOfMonth: prevMonth.getDate(),
         isCurrentMonth: false,
-        isOpen,
-        isToday: dateStr === todayStr,
+        isoDate: key,
+        entries: entriesByDate.get(key) ?? [],
       });
     }
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr =
-        year +
-        '-' +
-        String(month + 1).padStart(2, '0') +
-        '-' +
-        String(d).padStart(2, '0');
-      const dayOfWeek = new Date(year, month, d).getDay();
-      const isOpen = hours ? (hours[String(dayOfWeek)]?.length ?? 0) > 0 : false;
-      result.push({
-        date: dateStr,
+
+    // Ημέρες τρέχοντος μήνα
+    for (let d = 1; d <= totalDays; d++) {
+      const date = new Date(year, month, d);
+      const key = toDateStr(date);
+      week.push({
+        date,
         dayOfMonth: d,
         isCurrentMonth: true,
-        isOpen,
-        isToday: dateStr === todayStr,
+        isoDate: key,
+        entries: entriesByDate.get(key) ?? [],
       });
+      if (week.length === 7) {
+        weeks.push(week);
+        week = [];
+      }
     }
-    const filled = firstWeekday + daysInMonth;
-    const trailing = totalCells - filled;
-    for (let i = 0; i < trailing; i++) {
-      const nextDay = new Date(year, month + 1, i + 1);
-      const dateStr =
-        nextDay.getFullYear() +
-        '-' +
-        String(nextDay.getMonth() + 1).padStart(2, '0') +
-        '-' +
-        String(nextDay.getDate()).padStart(2, '0');
-      const dayOfWeek = nextDay.getDay();
-      const isOpen = hours ? (hours[String(dayOfWeek)]?.length ?? 0) > 0 : false;
-      result.push({
-        date: dateStr,
-        dayOfMonth: nextDay.getDate(),
-        isCurrentMonth: false,
-        isOpen,
-        isToday: dateStr === todayStr,
-      });
+
+    // Συμπλήρωση επόμενου μήνα
+    if (week.length > 0) {
+      let nextD = 1;
+      while (week.length < 7) {
+        const date = new Date(year, month + 1, nextD++);
+        const key = toDateStr(date);
+        week.push({
+          date,
+          dayOfMonth: date.getDate(),
+          isCurrentMonth: false,
+          isoDate: key,
+          entries: entriesByDate.get(key) ?? [],
+        });
+      }
+      weeks.push(week);
     }
-    return result;
+
+    return weeks;
   });
 
   calendarTitle = computed(() => {
@@ -367,35 +369,18 @@ export class EmployeeHoursComponent implements OnInit {
     if (this.selectedShopId()) this.loadForShopAndMonth();
   }
 
-  selectDay(day: CalendarDay): void {
-    if (!day.date) return;
-    this.selectedDate.set(day.date);
+  @ViewChild('dayDetailPanel') dayDetailPanel?: ElementRef<HTMLElement>;
+
+  onCalendarDaySelected(day: ScheduleCalendarDay): void {
+    if (!day.isoDate) return;
+    this.selectedDate.set(day.isoDate);
+    setTimeout(() => {
+      this.dayDetailPanel?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }
 
   closeDayDetail(): void {
     this.selectedDate.set(null);
-  }
-
-  getDayCellClasses(day: CalendarDay): Record<string, boolean> {
-    const current = day.isCurrentMonth;
-    const open = day.isOpen;
-    const today = day.isToday;
-    return {
-      'text-slate-400': !current,
-      'text-slate-800': current && !open,
-      'dark:text-slate-300': current && !open,
-      'dark:text-slate-500': !current,
-      'bg-emerald-500': current && open,
-      'text-white': current && open,
-      'hover:bg-emerald-600': current && open,
-      'bg-slate-100': current && !open,
-      'dark:bg-slate-700/50': current && !open,
-      'hover:bg-slate-200': current && !open,
-      'dark:hover:bg-slate-600': current && !open,
-      'ring-2': today,
-      'ring-cyan-400': today,
-      'ring-offset-2': today,
-    };
   }
 
   openAddModal(): void {
