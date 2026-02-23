@@ -10,9 +10,14 @@
       class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
       (click)="$event.stopPropagation()"
     >
-      @if (title) {
+      @if (title || subtitle) {
         <div class="p-6 border-b border-slate-200 dark:border-slate-700">
-          <h3 class="text-xl font-bold text-slate-800 dark:text-white">{{ title }}</h3>
+          @if (title) {
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white">{{ title }}</h3>
+          }
+          @if (subtitle) {
+            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">{{ subtitle }}</p>
+          }
         </div>
       }
       <form [id]="formId ?? null" (ngSubmit)="onSubmit()" class="p-6 grid grid-cols-2 gap-x-4 gap-y-5">
@@ -95,6 +100,9 @@
             }
           </div>
         }
+        <div class="col-span-2">
+          <ng-content select="[appModalBody]" />
+        </div>
       </form>
       <div class="px-6 pb-6 pt-4 border-t border-slate-200 dark:border-slate-700">
         <ng-content select="[appModalActions]" />

@@ -1,7 +1,8 @@
-<div class="border border-slate-200 dark:border-slate-700 rounded-xl">
+<div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
   <p-table [value]="data" [paginator]="paginator" [rows]="rows" [rowsPerPageOptions]="rowsPerPageOptions"
     [showCurrentPageReport]="true" currentPageReportTemplate="{{ 'table.pageReport' | translate }}" [loading]="loading"
-    [sortField]="sortField" [sortOrder]="sortOrder" [styleClass]="striped ? 'p-datatable-striped' : ''">
+    [sortField]="sortField" [sortOrder]="sortOrder" [styleClass]="striped ? 'p-datatable-striped' : ''"
+    [paginatorDropdownAppendTo]="'body'">
     <ng-template #header>
       <tr>
         @for (col of columns; track col.field) {

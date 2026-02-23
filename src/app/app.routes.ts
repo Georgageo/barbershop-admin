@@ -40,14 +40,14 @@ export const routes: Routes = [
         canActivate: [adminOnlyGuard],
       },
       {
-        path: 'staff',
-        loadComponent: () => import('./pages/staff/staff.component').then(m => m.StaffComponent),
+        path: 'barbers',
+        loadComponent: () => import('./pages/barbers/barbers.component').then(m => m.BarbersComponent),
         canActivate: [adminOnlyGuard],
       },
       {
-        path: 'barbers',
-        redirectTo: 'staff',
-        pathMatch: 'full',
+        path: 'managers',
+        loadComponent: () => import('./pages/managers/managers.component').then(m => m.ManagersComponent),
+        canActivate: [adminOnlyGuard],
       },
       {
         path: 'invitations',

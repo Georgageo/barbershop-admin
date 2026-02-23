@@ -12,6 +12,7 @@ import { ModalFieldConfig } from './modal.models';
 export class ModalComponent {
   @Input() visible = false;
   @Input() title: string | null = null;
+  @Input() subtitle: string | null = null;
   @Input() fields: ModalFieldConfig[] = [];
   @Input() model: Record<string, unknown> = {};
   @Input() formId: string | null = null;

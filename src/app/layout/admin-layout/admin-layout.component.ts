@@ -8,6 +8,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { LANG_STORAGE_KEY } from '../../app.component';
+import { AlertComponent } from '../../components/alert/alert.component';
+import { AlertService } from '../../components/alert/alert.service';
 
 /** Tailwind lg breakpoint (1024px) – sidebar is persistent above this. */
 const SIDEBAR_BREAKPOINT = '(min-width: 1024px)';
@@ -15,7 +17,7 @@ const SIDEBAR_BREAKPOINT = '(min-width: 1024px)';
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslateModule, AlertComponent],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss',
 })
@@ -23,6 +25,7 @@ export class AdminLayoutComponent implements OnInit {
   private router = inject(Router);
   private breakpoint = inject(BreakpointObserver);
   private destroyRef = inject(DestroyRef);
+  alertService = inject(AlertService);
   sidebarOpen = true;
   userMenuOpen = signal(false);
   langDropdownOpen = signal(false);

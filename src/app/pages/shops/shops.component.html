@@ -54,7 +54,7 @@
                 <button
                   type="button"
                   (click)="openEditModal(shop)"
-                  class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200"
+                  class="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:opacity-80 transition"
                   [title]="'common.edit' | translate"
                 >
                   <i class="pi pi-pencil"></i>
@@ -63,7 +63,7 @@
                   type="button"
                   (click)="confirmDelete(shop)"
                   [disabled]="deletingId() === shop.id"
-                  class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-800 dark:text-red-200"
+                  class="p-2 rounded-lg text-red-600 dark:text-red-400 hover:opacity-80 transition"
                   [title]="'common.delete' | translate"
                 >
                   <i class="pi pi-trash"></i>
@@ -97,7 +97,7 @@
               <button
                 type="button"
                 (click)="openEditModal(shop)"
-                class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200"
+                class="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:opacity-80 transition"
                 [title]="'common.edit' | translate"
               >
                 <i class="pi pi-pencil"></i>
@@ -106,7 +106,7 @@
                 type="button"
                 (click)="confirmDelete(shop)"
                 [disabled]="deletingId() === shop.id"
-                class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-800 dark:text-red-200"
+                class="p-2 rounded-lg text-red-600 dark:text-red-400 hover:opacity-80 transition"
                 [title]="'common.delete' | translate"
               >
                 <i class="pi pi-trash"></i>

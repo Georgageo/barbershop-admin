@@ -31,4 +31,8 @@ export class InvitationsService {
   create(dto: CreateInvitationDto): Observable<Invitation> {
     return this.http.post<Invitation>(`${environment.apiUrl}/invitations`, dto);
   }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/invitations/${id}`);
+  }
 }

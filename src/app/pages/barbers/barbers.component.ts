@@ -1,7 +1,9 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription, forkJoin } from 'rxjs';
 import { BarbersService } from '../../features/barbers/barbers.service';
 import { UsersService } from '../../features/users/users.service';
 import { ServicesService } from '../../features/services/services.service';
@@ -13,6 +15,15 @@ import {
   UserEligibleForBarber,
 } from '../../core/models/barber.model';
 import { Service } from '../../core/models/service.model';
+import { TableColumn } from '../../components/table/table.models';
+import { TableComponent } from '../../components/table/table.component';
+import { DataTableCellDirective } from '../../components/table/table-cell.directive';
+import { CardListComponent } from '../../components/card-list/card-list.component';
+import { CardItemDirective } from '../../components/card-list/card-item.directive';
+import { ModalComponent } from '../../components/modal/modal.component';
+import { ModalActionsDirective } from '../../components/modal/modal-actions.directive';
+import { ModalBodyDirective } from '../../components/modal/modal-body.directive';
+import { ModalFieldConfig } from '../../components/modal/modal.models';
 
 const WEEKDAY_NAMES = ['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'];
 
@@ -27,49 +38,144 @@ export interface CalendarDay {
 @Component({
   selector: 'app-barbers',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    TranslateModule,
+    TableComponent,
+    DataTableCellDirective,
+    CardListComponent,
+    CardItemDirective,
+    ModalComponent,
+    ModalActionsDirective,
+    ModalBodyDirective,
+  ],
   templateUrl: './barbers.component.html',
   styleUrl: './barbers.component.scss',
 })
-export class BarbersComponent implements OnInit {
+export class BarbersComponent implements OnInit, OnDestroy {
   private barbersService = inject(BarbersService);
   private usersService = inject(UsersService);
   private servicesService = inject(ServicesService);
   private scheduleService = inject(EmployeeScheduleService);
+  private translate = inject(TranslateService);
+  private langSub?: Subscription;
 
   list = signal<Barber[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
-  showCreateModal = signal(false);
-  showServicesModal = signal(false);
-  saving = signal(false);
-
-  /** View: list | calendar */
   viewMode = signal<'list' | 'calendar'>('list');
   calendarMonth = signal(new Date());
   scheduleEntries = signal<ScheduleEntry[]>([]);
   calendarLoading = signal(false);
   calendarUserId = signal('');
 
+  showCreateModal = signal(false);
+  showEditModal = signal(false);
+  barberForEdit = signal<Barber | null>(null);
+  saving = signal(false);
   eligibleUsers = signal<UserEligibleForBarber[]>([]);
-  allServices = signal<Service[]>([]);
-  barberForServices = signal<Barber | null>(null);
-  barberServicesLoading = signal(false);
-  barberServicesError = signal<string | null>(null);
 
-  form: CreateBarberDto = {
+  createForm: Record<string, unknown> = {
     userId: '',
-    bio: '',
     title: '',
+    bio: '',
     isAvailable: true,
   };
 
-  barberWithServices = signal<Barber | null>(null);
+  editForm: Record<string, unknown> = {
+    title: '',
+    bio: '',
+    isAvailable: true,
+  };
+
+  columns: TableColumn[] = [];
+
+  allServices = signal<Service[]>([]);
   assignedServiceIds = signal<Set<string>>(new Set());
+  initialServiceIds = signal<Set<string>>(new Set());
+  editServicesLoading = signal(false);
 
   readonly weekDays = WEEKDAY_NAMES;
 
-  /** Calendar grid: array of weeks, each week is 7 CalendarDay cells. */
+  private updateTranslations(): void {
+    const t = (key: string) => this.translate.instant(key);
+    this.columns = [
+      { field: 'name', header: t('common.name'), sortable: true },
+      { field: 'email', header: t('common.email'), sortable: true },
+      { field: 'title', header: t('staff.barberTitle') },
+      { field: 'details', header: t('staff.details') },
+      { field: 'actions', header: t('common.actions') },
+    ];
+  }
+
+  get createFormFields(): ModalFieldConfig[] {
+    const t = (key: string) => this.translate.instant(key);
+    return [
+      {
+        key: 'userId',
+        label: t('staff.userLabel'),
+        type: 'select',
+        required: true,
+        placeholder: t('staff.selectUser'),
+        hint: t('staff.userHint'),
+        options: this.eligibleUsers().map((u) => ({
+          value: u.id,
+          label: `${u.lastName} ${u.firstName} (${u.email})`,
+        })),
+      },
+      {
+        key: 'title',
+        label: t('staff.barberTitle'),
+        type: 'text',
+        placeholder: t('staff.barberTitlePlaceholder'),
+        maxLength: 100,
+      },
+      {
+        key: 'bio',
+        label: t('staff.barberBio'),
+        type: 'textarea',
+        placeholder: t('common.optional'),
+        maxLength: 500,
+        rows: 3,
+      },
+      {
+        key: 'isAvailable',
+        label: '',
+        type: 'checkbox',
+        placeholder: t('staff.availableForBookings'),
+      },
+    ];
+  }
+
+  get editFormFields(): ModalFieldConfig[] {
+    const t = (key: string) => this.translate.instant(key);
+    return [
+      {
+        key: 'title',
+        label: t('staff.barberTitle'),
+        type: 'text',
+        placeholder: t('staff.barberTitlePlaceholder'),
+        maxLength: 100,
+      },
+      {
+        key: 'bio',
+        label: t('staff.barberBio'),
+        type: 'textarea',
+        placeholder: t('common.optional'),
+        maxLength: 500,
+        rows: 3,
+      },
+      {
+        key: 'isAvailable',
+        label: '',
+        type: 'checkbox',
+        placeholder: t('staff.availableForBookings'),
+      },
+    ];
+  }
+
   calendarGrid = computed(() => {
     const month = this.calendarMonth();
     const entries = this.scheduleEntries();
@@ -137,7 +243,13 @@ export class BarbersComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.updateTranslations();
+    this.langSub = this.translate.onLangChange.subscribe(() => this.updateTranslations());
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
   }
 
   load(): void {
@@ -146,6 +258,7 @@ export class BarbersComponent implements OnInit {
     this.barbersService.getList().subscribe({
       next: (data) => {
         this.list.set(data);
+        console.log('Barbers list:', data);
         this.loading.set(false);
       },
       error: (err) => {
@@ -155,39 +268,44 @@ export class BarbersComponent implements OnInit {
     });
   }
 
+  setViewMode(mode: 'list' | 'calendar'): void {
+    this.viewMode.set(mode);
+    if (mode === 'calendar') this.loadCalendar();
+  }
+
+  displayName(barber: Barber): string {
+    const u = barber.user;
+    return [u?.firstName, u?.lastName].filter(Boolean).join(' ') || '—';
+  }
+
   openCreateModal(): void {
-    this.form = {
-      userId: '',
-      bio: '',
-      title: '',
-      isAvailable: true,
-    };
+    this.createForm = { userId: '', title: '', bio: '', isAvailable: true };
     this.error.set(null);
-    this.eligibleUsers.set([]);
     this.usersService.getEligibleForBarber().subscribe({
       next: (users) => {
         this.eligibleUsers.set(users);
         this.showCreateModal.set(true);
       },
-      error: (err) => {
-        this.error.set(err.error?.message ?? 'Σφάλμα φόρτωσης χρηστών');
-      },
+      error: (err) => this.error.set(err.error?.message ?? 'Σφάλμα φόρτωσης χρηστών'),
     });
   }
 
   closeCreateModal(): void {
     this.showCreateModal.set(false);
-    this.error.set(null);
   }
 
   saveCreate(): void {
-    if (!this.form.userId) {
-      this.error.set('Επιλέξτε χρήστη.');
-      return;
-    }
+    const userId = String(this.createForm['userId'] ?? '').trim();
+    if (!userId) return;
     this.saving.set(true);
     this.error.set(null);
-    this.barbersService.create(this.form).subscribe({
+    const payload: CreateBarberDto = {
+      userId,
+      title: (this.createForm['title'] as string)?.trim() || undefined,
+      bio: (this.createForm['bio'] as string)?.trim() || undefined,
+      isAvailable: this.createForm['isAvailable'] as boolean,
+    };
+    this.barbersService.create(payload).subscribe({
       next: () => {
         this.closeCreateModal();
         this.load();
@@ -195,6 +313,75 @@ export class BarbersComponent implements OnInit {
       },
       error: (err) => {
         this.error.set(err.error?.message ?? 'Σφάλμα δημιουργίας κουρέα');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  openEditModal(barber: Barber): void {
+    this.barberForEdit.set(barber);
+    this.error.set(null);
+    this.editServicesLoading.set(true);
+    forkJoin({
+      services: this.servicesService.getList(true),
+      barber: this.barbersService.getOne(barber.id),
+    }).subscribe({
+      next: ({ services, barber: b }) => {
+        this.allServices.set(services);
+        this.editForm = {
+          title: b.title ?? '',
+          bio: b.bio ?? '',
+          isAvailable: b.isAvailable ?? true,
+        };
+        const ids = new Set((b.barberServices ?? []).map((bs) => bs.serviceId));
+        this.assignedServiceIds.set(ids);
+        this.initialServiceIds.set(new Set(ids));
+        this.editServicesLoading.set(false);
+        this.showEditModal.set(true);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message ?? this.translate.instant('staff.errorLoadBarber'));
+        this.editServicesLoading.set(false);
+      },
+    });
+  }
+
+  closeEditModal(): void {
+    this.showEditModal.set(false);
+    this.barberForEdit.set(null);
+    this.assignedServiceIds.set(new Set());
+    this.initialServiceIds.set(new Set());
+  }
+
+  saveEdit(): void {
+    const barber = this.barberForEdit();
+    if (!barber) return;
+    this.saving.set(true);
+    this.error.set(null);
+    const payload: UpdateBarberDto = {
+      title: (this.editForm['title'] as string)?.trim() || undefined,
+      bio: (this.editForm['bio'] as string)?.trim() || undefined,
+      isAvailable: this.editForm['isAvailable'] as boolean,
+    };
+    const initial = this.initialServiceIds();
+    const current = this.assignedServiceIds();
+    const toAdd = [...current].filter((id) => !initial.has(id));
+    const toRemove = [...initial].filter((id) => !current.has(id));
+    const barberUpdate$ = this.barbersService.update(barber.id, payload);
+    const addRequests = toAdd.map((serviceId) =>
+      this.barbersService.addService(barber.id, serviceId)
+    );
+    const removeRequests = toRemove.map((serviceId) =>
+      this.barbersService.removeService(barber.id, serviceId)
+    );
+    forkJoin([barberUpdate$, ...addRequests, ...removeRequests]).subscribe({
+      next: () => {
+        this.closeEditModal();
+        this.load();
+        this.saving.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message ?? this.translate.instant('staff.errorUpdateBarber'));
         this.saving.set(false);
       },
     });
@@ -208,74 +395,18 @@ export class BarbersComponent implements OnInit {
     });
   }
 
-  openServicesModal(barber: Barber): void {
-    this.barberForServices.set(barber);
-    this.barberServicesError.set(null);
-    this.barberServicesLoading.set(true);
-    this.showServicesModal.set(true);
-
-    this.servicesService.getList(true).subscribe({
-      next: (services) => this.allServices.set(services),
-      error: () => this.barberServicesError.set('Σφάλμα φόρτωσης υπηρεσιών'),
-    });
-
-    this.barbersService.getOne(barber.id).subscribe({
-      next: (b) => {
-        this.barberWithServices.set(b);
-        const ids = new Set((b.barberServices ?? []).map(bs => bs.serviceId));
-        this.assignedServiceIds.set(ids);
-        this.barberServicesLoading.set(false);
-      },
-      error: (err) => {
-        this.barberServicesError.set(err.error?.message ?? 'Σφάλμα φόρτωσης κουρέα');
-        this.barberServicesLoading.set(false);
-      },
-    });
-  }
-
-  closeServicesModal(): void {
-    this.showServicesModal.set(false);
-    this.barberForServices.set(null);
-    this.barberWithServices.set(null);
-    this.barberServicesError.set(null);
-  }
-
   isServiceAssigned(serviceId: string): boolean {
     return this.assignedServiceIds().has(serviceId);
   }
 
   toggleBarberService(serviceId: string): void {
-    const barber = this.barberForServices();
-    if (!barber) return;
-
     const assigned = new Set(this.assignedServiceIds());
     if (assigned.has(serviceId)) {
-      this.barbersService.removeService(barber.id, serviceId).subscribe({
-        next: () => {
-          assigned.delete(serviceId);
-          this.assignedServiceIds.set(new Set(assigned));
-        },
-        error: () => this.barberServicesError.set('Σφάλμα αφαίρεσης υπηρεσίας'),
-      });
+      assigned.delete(serviceId);
     } else {
-      this.barbersService.addService(barber.id, serviceId).subscribe({
-        next: () => {
-          assigned.add(serviceId);
-          this.assignedServiceIds.set(new Set(assigned));
-        },
-        error: () => this.barberServicesError.set('Σφάλμα προσθήκης υπηρεσίας'),
-      });
+      assigned.add(serviceId);
     }
-  }
-
-  displayName(barber: Barber): string {
-    const u = barber.user;
-    return [u.firstName, u.lastName].filter(Boolean).join(' ') || '—';
-  }
-
-  setViewMode(mode: 'list' | 'calendar'): void {
-    this.viewMode.set(mode);
-    if (mode === 'calendar') this.loadCalendar();
+    this.assignedServiceIds.set(assigned);
   }
 
   prevMonth(): void {
@@ -304,9 +435,7 @@ export class BarbersComponent implements OnInit {
           this.scheduleEntries.set(entries);
           this.calendarLoading.set(false);
         },
-        error: () => {
-          this.calendarLoading.set(false);
-        },
+        error: () => this.calendarLoading.set(false),
       });
   }
 

@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ServicesService } from '../../features/services/services.service';
+import { AlertService } from '../../components/alert/alert.service';
 import { Service, CreateServiceDto, UpdateServiceDto } from '../../core/models/service.model';
-import { TableAction, TableColumn } from '../../components/table/table.models';
+import { TableColumn } from '../../components/table/table.models';
 import { TableComponent } from '../../components/table/table.component';
 import { DataTableCellDirective } from '../../components/table/table-cell.directive';
 import { Subscription } from 'rxjs';
@@ -33,11 +34,11 @@ import { ModalFieldConfig } from '../../components/modal/modal.models';
 })
 export class ServicesComponent implements OnInit, OnDestroy {
   private servicesService = inject(ServicesService);
+  private alertService = inject(AlertService);
   private translate = inject(TranslateService);
   private langSub?: Subscription;
 
   columns: TableColumn[] = [];
-  actions: TableAction<Service>[] = [];
 
   private updateTranslations(): void {
     const t = (key: string) => this.translate.instant(key);
@@ -46,11 +47,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
       { field: 'duration', header: t('common.duration') },
       { field: 'price', header: t('common.price'), sortable: true },
       { field: 'status', header: t('common.status') },
-    ];
-    this.actions = [
-      { icon: 'pi pi-pencil', tooltip: t('common.edit'), onClick: (s) => this.openEditModal(s) },
-      { icon: 'pi pi-power-off', tooltip: t('common.toggleActive'), severity: 'warn', onClick: (s) => this.toggleActive(s) },
-      { icon: 'pi pi-trash', tooltip: t('common.delete'), severity: 'danger', onClick: (s) => this.confirmDelete(s) },
+      { field: 'actions', header: t('common.actions') },
     ];
   }
 
@@ -217,19 +214,27 @@ export class ServicesComponent implements OnInit, OnDestroy {
   }
 
   confirmDelete(service: Service): void {
-    if (confirm(this.translate.instant('services.confirmDelete', { name: service.name }))) {
-      this.deletingId.set(service.id);
-      this.servicesService.delete(service.id).subscribe({
-        next: () => {
-          this.load();
-          this.deletingId.set(null);
-        },
-        error: () => {
-          this.error.set(this.translate.instant('services.errorDelete'));
-          this.deletingId.set(null);
-        },
+    this.alertService
+      .confirm({
+        title: this.translate.instant('services.deleteServiceTitle'),
+        message: this.translate.instant('services.confirmDelete', { name: service.name }),
+        type: 'confirm',
+        confirmText: this.translate.instant('common.delete'),
+      })
+      .then((ok) => {
+        if (!ok) return;
+        this.deletingId.set(service.id);
+        this.servicesService.delete(service.id).subscribe({
+          next: () => {
+            this.load();
+            this.deletingId.set(null);
+          },
+          error: () => {
+            this.error.set(this.translate.instant('services.errorDelete'));
+            this.deletingId.set(null);
+          },
+        });
       });
-    }
   }
 
   formatPrice(cents: number): string {

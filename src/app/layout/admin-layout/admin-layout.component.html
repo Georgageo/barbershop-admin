@@ -2,108 +2,88 @@
   <!-- Sidebar -->
   <aside
     class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50 flex flex-col transition-transform duration-200 ease-out"
-    [class.-translate-x-full]="!sidebarOpen"
-    [class.translate-x-0]="sidebarOpen"
-  >
+    [class.-translate-x-full]="!sidebarOpen" [class.translate-x-0]="sidebarOpen">
     <div class="flex items-center gap-3 px-6 h-16 border-b border-slate-200 dark:border-slate-700/50 shrink-0">
-      <span class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">{{ 'nav.appName' | translate }}</span>
+      <span class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">{{ 'nav.appName' | translate
+        }}</span>
     </div>
     <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
       @if (isBarber || isAdmin || managerCanSeeShopsAndBookings) {
-        <a
-          routerLink="/admin/bookings"
-          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
-        >
-          <span class="pi pi-calendar text-lg"></span>
-          <span>{{ (isBarber ? 'bookings.mySchedule' : 'bookings.bookings') | translate }}</span>
-        </a>
+      <a routerLink="/admin/bookings"
+        routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-calendar text-lg"></span>
+        <span>{{ (isBarber ? 'bookings.mySchedule' : 'bookings.bookings') | translate }}</span>
+      </a>
       }
       @if (isBarber || isManager) {
-        <a
-          routerLink="/admin/my-schedule"
-          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
-        >
-          <span class="pi pi-clock text-lg"></span>
-          <span>{{ 'nav.mySchedule' | translate }}</span>
-        </a>
+      <a routerLink="/admin/my-schedule"
+        routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-clock text-lg"></span>
+        <span>{{ 'nav.mySchedule' | translate }}</span>
+      </a>
       }
       @if (isAdmin) {
-        <a
-          routerLink="/admin/customers"
-          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
-        >
-          <span class="pi pi-users text-lg"></span>
-          <span>{{ 'nav.customers' | translate }}</span>
-        </a>
-        <a
-          routerLink="/admin/services"
-          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
-        >
-          <span class="pi pi-list text-lg"></span>
-          <span>{{ 'nav.services' | translate }}</span>
-        </a>
-        <a
-          routerLink="/admin/staff"
-          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
-          [routerLinkActiveOptions]="{ exact: false }"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
-        >
-          <span class="pi pi-users text-lg"></span>
-          <span>{{ 'nav.staff' | translate }}</span>
-        </a>
-        <a
-          routerLink="/admin/invitations"
-          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
-        >
-          <span class="pi pi-envelope text-lg"></span>
-          <span>{{ 'nav.invitations' | translate }}</span>
-        </a>
+      <a routerLink="/admin/customers"
+        routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-users text-lg"></span>
+        <span>{{ 'nav.customers' | translate }}</span>
+      </a>
+      <a routerLink="/admin/services"
+        routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-list text-lg"></span>
+        <span>{{ 'nav.services' | translate }}</span>
+      </a>
+      <a routerLink="/admin/barbers" routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-users text-lg"></span>
+        <span>{{ 'staff.barbers' | translate }}</span>
+      </a>
+      <a routerLink="/admin/managers" routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-briefcase text-lg"></span>
+        <span>{{ 'staff.managers' | translate }}</span>
+      </a>
+      <a routerLink="/admin/invitations"
+        routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-envelope text-lg"></span>
+        <span>{{ 'nav.invitations' | translate }}</span>
+      </a>
       }
       @if (managerCanSeeShopsAndBookings) {
-        <a
-          routerLink="/admin/shops"
-          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
-          [routerLinkActiveOptions]="{ exact: false }"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
-        >
-          <span class="pi pi-shop text-lg"></span>
-          <span>{{ 'nav.shops' | translate }}</span>
-        </a>
-        <a
-          routerLink="/admin/employee-hours"
-          routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition"
-        >
-          <span class="pi pi-clock text-lg"></span>
-          <span>{{ 'nav.employeeHours' | translate }}</span>
-        </a>
+      <a routerLink="/admin/shops" routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-shop text-lg"></span>
+        <span>{{ 'nav.shops' | translate }}</span>
+      </a>
+      <a routerLink="/admin/employee-hours"
+        routerLinkActive="bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/50"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent transition">
+        <span class="pi pi-clock text-lg"></span>
+        <span>{{ 'nav.employeeHours' | translate }}</span>
+      </a>
       }
     </nav>
   </aside>
 
   <!-- Overlay only on mobile when sidebar open (avoid black screen when resizing to desktop) -->
   @if (sidebarOpen && !isDesktop()) {
-    <div
-      class="fixed inset-0 bg-black/50 z-30"
-      (click)="toggleSidebar()"
-      aria-hidden="true"
-    ></div>
+  <div class="fixed inset-0 bg-black/50 z-30" (click)="toggleSidebar()" aria-hidden="true"></div>
   }
 
   <!-- Main content -->
   <div class="flex-1 flex flex-col min-w-0">
-    <header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center px-4 lg:px-8 shrink-0 fixed lg:static top-0 left-0 right-0 z-40">
-      <button
-        type="button"
-        (click)="toggleSidebar()"
+    <header
+      class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center px-4 lg:px-8 shrink-0 fixed lg:static top-0 left-0 right-0 z-40">
+      <button type="button" (click)="toggleSidebar()"
         class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
-        [attr.aria-label]="'nav.toggleMenu' | translate"
-      >
+        [attr.aria-label]="'nav.toggleMenu' | translate">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
@@ -112,142 +92,125 @@
       <!-- Language dropdown + Theme, right next to each other -->
       <div class="flex items-center gap-1 mr-2">
         <div class="relative">
-          <button
-            type="button"
-            (click)="openLangDropdown()"
+          <button type="button" (click)="openLangDropdown()"
             class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5 min-w-[2.5rem]"
-            [attr.aria-label]="'nav.language' | translate"
-            [attr.aria-expanded]="langDropdownOpen()"
-          >
+            [attr.aria-label]="'nav.language' | translate" [attr.aria-expanded]="langDropdownOpen()">
             <span class="text-sm font-medium">{{ translate.currentLang === 'el' ? 'ΕΛ' : 'EN' }}</span>
-            <svg class="w-4 h-4 transition-transform" [class.rotate-180]="langDropdownOpen()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-transform" [class.rotate-180]="langDropdownOpen()" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           @if (langDropdownOpen()) {
-            <div
-              class="fixed inset-0 z-40"
-              (click)="closeLangDropdown()"
-              aria-hidden="true"
-            ></div>
-            <div
-              class="absolute right-0 top-full mt-1 py-1 w-32 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-lg z-50"
-              role="menu"
-            >
-              <button
-                type="button"
-                (click)="selectLanguage('el')"
-                role="menuitem"
-                class="w-full px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between"
-                [class]="translate.currentLang === 'el' ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'"
-              >
-                <span>Ελληνικά</span>
-                @if (translate.currentLang === 'el') {
-                  <span class="pi pi-check text-cyan-600 dark:text-cyan-400"></span>
-                }
-              </button>
-              <button
-                type="button"
-                (click)="selectLanguage('en')"
-                role="menuitem"
-                class="w-full px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between"
-                [class]="translate.currentLang === 'en' ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'"
-              >
-                <span>English</span>
-                @if (translate.currentLang === 'en') {
-                  <span class="pi pi-check text-cyan-600 dark:text-cyan-400"></span>
-                }
-              </button>
-            </div>
+          <div class="fixed inset-0 z-40" (click)="closeLangDropdown()" aria-hidden="true"></div>
+          <div
+            class="absolute right-0 top-full mt-1 py-1 w-32 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-lg z-50"
+            role="menu">
+            <button type="button" (click)="selectLanguage('el')" role="menuitem"
+              class="w-full px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between"
+              [class]="translate.currentLang === 'el' ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">
+              <span>Ελληνικά</span>
+              @if (translate.currentLang === 'el') {
+              <span class="pi pi-check text-cyan-600 dark:text-cyan-400"></span>
+              }
+            </button>
+            <button type="button" (click)="selectLanguage('en')" role="menuitem"
+              class="w-full px-4 py-2.5 text-left text-sm font-medium transition flex items-center justify-between"
+              [class]="translate.currentLang === 'en' ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">
+              <span>English</span>
+              @if (translate.currentLang === 'en') {
+              <span class="pi pi-check text-cyan-600 dark:text-cyan-400"></span>
+              }
+            </button>
+          </div>
           }
         </div>
-        <button
-          type="button"
-          (click)="theme.toggleTheme()"
+        <button type="button" (click)="theme.toggleTheme()"
           class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           [attr.aria-label]="(theme.theme() === 'dark' ? 'nav.lightTheme' : 'nav.darkTheme') | translate"
-          [title]="(theme.theme() === 'dark' ? 'nav.lightTheme' : 'nav.darkTheme') | translate"
-        >
+          [title]="(theme.theme() === 'dark' ? 'nav.lightTheme' : 'nav.darkTheme') | translate">
           @if (theme.theme() === 'dark') {
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
           } @else {
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
           }
         </button>
       </div>
       <!-- User menu (top right) -->
       <div class="relative ml-auto">
-        <button
-          type="button"
-          (click)="toggleUserMenu()"
+        <button type="button" (click)="toggleUserMenu()"
           class="w-10 h-10 rounded-full bg-cyan-500 text-white font-semibold text-sm flex items-center justify-center hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 transition"
-          [attr.aria-expanded]="userMenuOpen()"
-          [attr.aria-label]="'nav.userAccount' | translate"
-        >
+          [attr.aria-expanded]="userMenuOpen()" [attr.aria-label]="'nav.userAccount' | translate">
           {{ auth.getInitials() }}
         </button>
 
         @if (userMenuOpen()) {
-          <div
-            class="fixed inset-0 z-40"
-            (click)="closeUserMenu()"
-            aria-hidden="true"
-          ></div>
-          <div
-            class="absolute right-0 top-full mt-2 w-56 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-lg py-2 z-50"
-            role="menu"
-          >
-            <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-600">
-              <p class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate" title="{{ auth.currentUser()?.email }}">
-                {{ auth.currentUser()?.email }}
-              </p>
-            </div>
-            <a
-              routerLink="/admin/profile"
-              (click)="closeUserMenu()"
-              class="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
-              role="menuitem"
-            >
-              <span aria-hidden="true" class="pi pi-user text-lg"></span>
-              {{ 'nav.profile' | translate }}
-            </a>
-            <button
-              type="button"
-              (click)="closeUserMenu(); auth.logout()"
-              class="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-              role="menuitem"
-            >
-              <span aria-hidden="true" class="pi pi-sign-out text-lg"></span>
-              {{ 'nav.logout' | translate }}
-            </button>
+        <div class="fixed inset-0 z-40" (click)="closeUserMenu()" aria-hidden="true"></div>
+        <div
+          class="absolute right-0 top-full mt-2 w-56 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-lg py-2 z-50"
+          role="menu">
+          <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-600">
+            <p class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate"
+              title="{{ auth.currentUser()?.email }}">
+              {{ auth.currentUser()?.email }}
+            </p>
           </div>
+          <a routerLink="/admin/profile" (click)="closeUserMenu()"
+            class="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+            role="menuitem">
+            <span aria-hidden="true" class="pi pi-user text-lg"></span>
+            {{ 'nav.profile' | translate }}
+          </a>
+          <button type="button" (click)="closeUserMenu(); auth.logout()"
+            class="flex items-center gap-2 w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+            role="menuitem">
+            <span aria-hidden="true" class="pi pi-sign-out text-lg"></span>
+            {{ 'nav.logout' | translate }}
+          </button>
+        </div>
         }
       </div>
     </header>
 
     <main class="flex-1 p-4 pt-16 lg:pt-8 lg:p-8 overflow-auto">
       @if (managerHasNoShops) {
-        <div class="max-w-md mx-auto mt-16 text-center">
-          <div class="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-8">
-            <span class="text-4xl mb-4 block pi pi-store" aria-hidden="true"></span>
-            <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-2">{{ 'layout.managerNoShopsTitle' | translate }}</h2>
-            <p class="text-slate-600 dark:text-slate-400 mb-6">
-              {{ 'layout.managerNoShopsMessage' | translate }}
-            </p>
-            <p class="text-sm text-slate-500 dark:text-slate-500">
-              {{ 'layout.managerNoShopsContactBefore' | translate }}
-              <a routerLink="/admin/profile" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ 'nav.profile' | translate }}</a>
-              {{ 'layout.managerNoShopsContactAfter' | translate }}
-            </p>
-          </div>
+      <div class="max-w-md mx-auto mt-16 text-center">
+        <div class="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-8">
+          <span class="text-4xl mb-4 block pi pi-store" aria-hidden="true"></span>
+          <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-2">{{ 'layout.managerNoShopsTitle' | translate
+            }}</h2>
+          <p class="text-slate-600 dark:text-slate-400 mb-6">
+            {{ 'layout.managerNoShopsMessage' | translate }}
+          </p>
+          <p class="text-sm text-slate-500 dark:text-slate-500">
+            {{ 'layout.managerNoShopsContactBefore' | translate }}
+            <a routerLink="/admin/profile" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ 'nav.profile' |
+              translate }}</a>
+            {{ 'layout.managerNoShopsContactAfter' | translate }}
+          </p>
         </div>
+      </div>
       } @else {
-        <router-outlet />
+      <router-outlet />
       }
     </main>
   </div>
+
+  <app-alert
+    [visible]="alertService.visible()"
+    [title]="alertService.config()?.title ?? ''"
+    [message]="alertService.config()?.message ?? ''"
+    [type]="alertService.config()?.type ?? 'confirm'"
+    [confirmText]="alertService.config()?.confirmText ?? ''"
+    [cancelText]="alertService.config()?.cancelText ?? ''"
+    [showCancel]="alertService.config()?.showCancel ?? true"
+    (confirm)="alertService.onConfirm()"
+    (cancel)="alertService.onCancel()"
+  />
 </div>

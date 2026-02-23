@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Cancel",
+    "confirm": "Confirm",
     "save": "Save",
     "saving": "Saving...",
     "refresh": "Refresh",
@@ -81,6 +82,7 @@
     "errorUpdate": "Error updating",
     "errorDelete": "Error deleting",
     "fillRequired": "Please fill all required fields.",
+    "deleteServiceTitle": "Delete service",
     "confirmDelete": "Are you sure you want to delete the service \"{{name}}\"?",
     "statusActive": "Active",
     "statusInactive": "Inactive"
@@ -179,6 +181,7 @@
     "noShopsAvailable": "No shops available.",
     "errorSaveShops": "Error saving shop assignments.",
     "editBarber": "Edit barber",
+    "editManager": "Edit manager",
     "barberTitle": "Title",
     "barberTitlePlaceholder": "e.g. Senior Barber",
     "barberBio": "Bio",
@@ -189,6 +192,23 @@
     "userLabel": "User",
     "selectUser": "— Select user —",
     "userHint": "Only users without a barber profile."
+  },
+  "barbers": {
+    "title": "Barbers",
+    "subtitle": "Manage barbers, services and schedule",
+    "listView": "List",
+    "calendarView": "Calendar",
+    "addBarber": "Add barber",
+    "employeeHoursLink": "Employee hours →",
+    "noBarbers": "No barbers. Add a new barber.",
+    "servicesCount": "{{count}} services",
+    "newBarber": "New Barber"
+  },
+  "managers": {
+    "title": "Managers",
+    "subtitle": "Shop managers – assign to shops",
+    "noManagers": "No managers. Create an invitation for a manager.",
+    "loadingManagers": "Loading managers..."
   },
   "invitations": {
     "title": "Invitations",
@@ -209,6 +229,9 @@
     "sendingInvitation": "Sending...",
     "errorLoad": "Error loading invitations",
     "errorSend": "Error sending invitation",
+    "errorDelete": "Error deleting invitation",
+    "cancelInvitationTitle": "Cancel invitation",
+    "confirmDelete": "Are you sure you want to cancel the invitation for {{email}}?",
     "fillEmail": "Please enter email."
   },
   "shops": {
@@ -218,6 +241,7 @@
     "loadingShops": "Loading shops...",
     "openingHours": "Opening hours",
     "noShops": "No shops. Add a new shop.",
+    "deleteShopTitle": "Delete shop",
     "confirmDelete": "Are you sure you want to delete the shop \"{{name}}\"? Opening hours will also be deleted.",
     "editShop": "Edit shop",
     "newShopTitle": "New shop",

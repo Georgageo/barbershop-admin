@@ -1,0 +1,143 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">{{ 'managers.title' | translate }}</h2>
+      <p class="text-slate-600 dark:text-slate-400 mt-1">{{ 'managers.subtitle' | translate }}</p>
+    </div>
+    <a
+      routerLink="/admin/invitations"
+      class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium transition"
+    >
+      {{ 'invitations.inviteUser' | translate }} ({{ 'invitations.roleManager' | translate }})
+    </a>
+  </div>
+
+  @if (error() && !showEditModal()) {
+    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3">
+      {{ error() }}
+    </div>
+  }
+
+  <div class="md:hidden">
+    <app-card-list
+      [data]="list()"
+      [loading]="loading()"
+      [emptyMessage]="'managers.noManagers' | translate"
+      trackBy="id"
+    >
+      <ng-template appCardItem let-m>
+        <div class="space-y-2">
+          <p class="font-semibold text-slate-800 dark:text-white">{{ displayName(m) }}</p>
+          <p class="text-sm text-slate-600 dark:text-slate-400">{{ m.email }}</p>
+          @if (m.managedShops && m.managedShops.length > 0) {
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+              {{ 'staff.managerShopsCount' | translate: { count: m.managedShops.length } }}: {{ managerShopsSummary(m) }}
+            </p>
+          }
+          @if (!m.managedShops || m.managedShops.length === 0) {
+            <p class="text-sm text-slate-400 dark:text-slate-500">{{ 'staff.noShopAssigned' | translate }}</p>
+          }
+          <div class="flex flex-wrap items-center gap-2 pt-2">
+            <button
+              type="button"
+              (click)="openEditModal(m)"
+              class="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:opacity-80 transition"
+              [title]="'common.edit' | translate"
+            >
+              <i class="pi pi-pencil"></i>
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </app-card-list>
+  </div>
+
+  <div class="hidden md:block">
+    <app-data-table
+      [data]="list()"
+      [columns]="columns"
+      [loading]="loading()"
+      [emptyMessage]="'managers.noManagers' | translate"
+    >
+      <ng-template appTableCell="name" let-m>{{ displayName(m) }}</ng-template>
+      <ng-template appTableCell="email" let-m>{{ m.email }}</ng-template>
+      <ng-template appTableCell="details" let-m>
+        @if (m.managedShops && m.managedShops.length > 0) {
+          <span class="text-slate-500 dark:text-slate-400">
+            {{ 'staff.managerShopsCount' | translate: { count: m.managedShops.length } }}: {{ managerShopsSummary(m) }}
+          </span>
+        }
+        @if (!m.managedShops || m.managedShops.length === 0) {
+          <span class="text-slate-400 dark:text-slate-500">{{ 'staff.noShopAssigned' | translate }}</span>
+        }
+      </ng-template>
+      <ng-template appTableCell="actions" let-m>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            (click)="openEditModal(m)"
+            class="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:opacity-80 transition"
+            [title]="'common.edit' | translate"
+          >
+            <i class="pi pi-pencil"></i>
+          </button>
+        </div>
+      </ng-template>
+    </app-data-table>
+  </div>
+
+  <app-modal
+    [visible]="showEditModal()"
+    [title]="('staff.editManager' | translate) + ' — ' + (managerForEdit() ? displayName(managerForEdit()!) : '')"
+    [fields]="[]"
+    [model]="{}"
+    formId="editManagerShopsForm"
+    [errorMessage]="error()"
+    (close)="closeEditModal()"
+    (submit)="saveEdit()"
+  >
+    <div appModalBody class="pt-4">
+      <p class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{{ 'staff.shopsModalTitle' | translate }}</p>
+      @if (editShopsLoading()) {
+        <p class="text-slate-500 dark:text-slate-400 text-sm py-2">{{ 'common.loading' | translate }}</p>
+      } @else {
+        <ul class="space-y-2 max-h-48 overflow-y-auto">
+          @for (shop of allShops(); track shop.id) {
+            <li class="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
+              <input
+                type="checkbox"
+                [id]="'edit-shop-' + shop.id"
+                [checked]="isManagerShopSelected(shop.id)"
+                (change)="toggleManagerShopSelection(shop.id)"
+                class="rounded border-slate-300 text-cyan-500 focus:ring-cyan-500"
+              />
+              <label [for]="'edit-shop-' + shop.id" class="flex-1 cursor-pointer font-medium text-slate-800 dark:text-white text-sm">
+                {{ shop.name }}
+              </label>
+            </li>
+          } @empty {
+            <p class="text-slate-500 dark:text-slate-400 text-sm py-2">{{ 'staff.noShopsAvailable' | translate }}</p>
+          }
+        </ul>
+      }
+    </div>
+    <div appModalActions class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        (click)="closeEditModal()"
+        [disabled]="saving()"
+        class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium transition disabled:opacity-60"
+      >
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button
+        type="submit"
+        [disabled]="saving()"
+        form="editManagerShopsForm"
+        class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-semibold transition disabled:opacity-60"
+      >
+        {{ saving() ? ('common.saving' | translate) : ('common.save' | translate) }}
+      </button>
+    </div>
+  </app-modal>
+</div>

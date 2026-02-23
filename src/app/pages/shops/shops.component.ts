@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { ShopsService, Shop, UpdateShopDto } from '../../features/shops/shops.service';
+import { AlertService } from '../../components/alert/alert.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { TableColumn } from '../../components/table/table.models';
 import { TableComponent } from '../../components/table/table.component';
@@ -35,6 +36,7 @@ import { ModalFieldConfig } from '../../components/modal/modal.models';
 })
 export class ShopsComponent implements OnInit, OnDestroy {
   private shopsService = inject(ShopsService);
+  private alertService = inject(AlertService);
   private auth = inject(AuthService);
   private translate = inject(TranslateService);
   private langSub?: Subscription;
@@ -186,18 +188,26 @@ export class ShopsComponent implements OnInit, OnDestroy {
   }
 
   confirmDelete(shop: Shop): void {
-    if (confirm(this.translate.instant('shops.confirmDelete', { name: shop.name }))) {
-      this.deletingId.set(shop.id);
-      this.shopsService.delete(shop.id).subscribe({
-        next: () => {
-          this.load();
-          this.deletingId.set(null);
-        },
-        error: (err) => {
-          this.error.set(err.error?.message ?? 'Σφάλμα διαγραφής');
-          this.deletingId.set(null);
-        },
+    this.alertService
+      .confirm({
+        title: this.translate.instant('shops.deleteShopTitle'),
+        message: this.translate.instant('shops.confirmDelete', { name: shop.name }),
+        type: 'confirm',
+        confirmText: this.translate.instant('common.delete'),
+      })
+      .then((ok) => {
+        if (!ok) return;
+        this.deletingId.set(shop.id);
+        this.shopsService.delete(shop.id).subscribe({
+          next: () => {
+            this.load();
+            this.deletingId.set(null);
+          },
+          error: (err) => {
+            this.error.set(err.error?.message ?? 'Σφάλμα διαγραφής');
+            this.deletingId.set(null);
+          },
+        });
       });
-    }
   }
 }
